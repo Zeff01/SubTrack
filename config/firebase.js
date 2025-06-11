@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { initializeAuth, createUserWithEmailAndPassword  } from "firebase/auth";
+import { initializeAuth  } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
@@ -15,14 +15,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = initializeAuth(app);
 const db = getFirestore(app);
-
-    // const userCredential = await createUserWithEmailAndPassword(
-    //       auth,
-    //       "testuser@example.com",
-    //       "testpassword"
-    // );
-
-    // console.log("🔐 Auth User:", userCredential.user);
 
 
 export { app, auth, db };
