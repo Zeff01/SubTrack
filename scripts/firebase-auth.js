@@ -44,7 +44,7 @@ export async function authenticateUser() {
 	}
 }
 
-// Testing Scripts, uncomment to test code.
+// Testing Scripts, uncomment to test code (NOTE: Please change [email, password] for createUser script).
 // (async () => {
 // 	await createUser();
 // 	await authenticateUser();
