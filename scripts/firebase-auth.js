@@ -5,9 +5,9 @@ import {
 import { auth } from "../config/firebase.js";
 
 // Posts new user to Firebase (NOTE: TEMPORARY VARIABLES [email, password] ARE USED, PLEASE REPLACE.)
-async function createUser() {
-	const email = "testuser2@example.com";
-	const password = "testpassword123";
+export async function createUser() {
+	const email = "testuser@example.com";
+	const password = "testpassword";
 
 	try {
 		const userCredential = await createUserWithEmailAndPassword(
@@ -25,9 +25,9 @@ async function createUser() {
 }
 
 // Authenticates user via Firebase (NOTE: TEMPORARY VARIABLES [email, password] ARE USED, PLEASE REPLACE.)
-async function authenticateUser() {
-	const email = "testuser2@example.com";
-	const password = "testpassword123";
+export async function authenticateUser() {
+	const email = "testuser@example.com";
+	const password = "testpassword";
 
 	try {
 		const userCredential = await signInWithEmailAndPassword(
@@ -44,7 +44,7 @@ async function authenticateUser() {
 	}
 }
 
-// Testing Scripts, uncomment to test code (Reminder: Change ).
+// Testing Scripts, uncomment to test code.
 // (async () => {
 // 	await createUser();
 // 	await authenticateUser();
