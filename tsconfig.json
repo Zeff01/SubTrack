@@ -5,7 +5,10 @@
 		"baseUrl": ".",
 		"paths": {
 			"@/*": ["./*"]
-		}
+		},
+		"module": "CommonJS",
+		"esModuleInterop": true,
+		"moduleResolution": "node"
 	},
 	"include": [
 		"**/*.ts",
