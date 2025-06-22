@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Form, FormField, FormInput } from "@/components/ui/form";
 import { Text } from "@/components/ui/text";
 import { H1 } from "@/components/ui/typography";
-import { useAuth } from "@/context/supabase-provider";
+// import { useAuth } from "@/context/supabase-provider";
 
 const formSchema = z
 	.object({
@@ -38,7 +38,7 @@ const formSchema = z
 	});
 
 export default function SignUp() {
-	const { signUp } = useAuth();
+	// const { signUp } = useAuth();
 
 	const form = useForm<z.infer<typeof formSchema>>({
 		resolver: zodResolver(formSchema),
@@ -51,7 +51,7 @@ export default function SignUp() {
 
 	async function onSubmit(data: z.infer<typeof formSchema>) {
 		try {
-			await signUp(data.email, data.password);
+			// await signUp(data.email, data.password);
 
 			form.reset();
 		} catch (error: Error | any) {

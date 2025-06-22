@@ -19,7 +19,7 @@ const formSchema = z.object({
 });
 
 export default function SignIn() {
-	const { signIn } = useAuth();
+	// const { signIn } = useAuth();
 
 	const form = useForm<z.infer<typeof formSchema>>({
 		resolver: zodResolver(formSchema),
@@ -31,7 +31,7 @@ export default function SignIn() {
 
 	async function onSubmit(data: z.infer<typeof formSchema>) {
 		try {
-			await signIn(data.email, data.password);
+			// await signIn(data.email, data.password);
 
 			form.reset();
 		} catch (error: Error | any) {

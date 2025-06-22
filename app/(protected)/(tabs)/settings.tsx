@@ -3,10 +3,10 @@ import { View } from "react-native";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import { H1, Muted } from "@/components/ui/typography";
-import { useAuth } from "@/context/supabase-provider";
+// import { useAuth } from "@/context/supabase-provider";
 
 export default function Settings() {
-	const { signOut } = useAuth();
+	// const { signOut } = useAuth();
 
 	return (
 		<View className="flex-1 items-center justify-center bg-background p-4 gap-y-4">
@@ -19,7 +19,8 @@ export default function Settings() {
 				size="default"
 				variant="default"
 				onPress={async () => {
-					await signOut();
+					/* replace with firebase auth */
+					// await signOut();
 				}}
 			>
 				<Text>Sign Out</Text>
