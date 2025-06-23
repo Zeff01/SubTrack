@@ -6,7 +6,7 @@ import { onAuthStateChanged, signOut, User } from 'firebase/auth';
 import React, { useCallback, useState } from 'react';
 import { Alert, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Calendar } from 'react-native-calendars';
-import { auth } from "../../config/firebase"; // Assuming db is not needed here
+import { auth } from "../../config/firebase.js"; // Assuming db is not needed here
 import { createDocumentSubscription, retrieveAllDocumentSubscriptionMonthlySpecificUser } from "../../services/userService.js";
 import Subscription from '../../types/Subscription.js';
 
@@ -79,8 +79,8 @@ const SubscriptionManager = () => {
         setLoading(true);
         const date_info =  { month: month, year: year };
         const res = await retrieveAllDocumentSubscriptionMonthlySpecificUser(user_id, date_info);
-        const data = res.data as Subscription[];
-        const totalCost = data.reduce((sum, sub) => { return sum + parseFloat(sub?.cost || '0'); }, 0)
+        const data = res?.data as Subscription[];
+        const totalCost = data?.reduce((sum, sub) => { return sum + parseFloat(sub?.cost || '0'); }, 0)
         setTotalCost(totalCost);
        // setSubscriptions(data);
       } catch (error) {
@@ -94,9 +94,9 @@ const SubscriptionManager = () => {
 
   const handleLogout = async () => {
     try {
-      await signOut(auth);
-      router.push("/(screens)/welcome");
+      router.replace("/(screens)/welcome");
       Alert.alert("Logged out", "You have been signed out.");
+      await signOut(auth);
     } catch (error) {
       Alert.alert("Error", "Failed to logout. Please try again.");
       console.error("Logout error:", error);
@@ -256,7 +256,8 @@ const SubscriptionManager = () => {
           </Text>
         </TouchableOpacity>
           
-        <TouchableOpacity  className="mt-6 bg-blue-600 rounded-lg p-3 hover:bg-blue-500 transition ease-in-out duration-200" onPress={subscriptionSubmit}>
+        <TouchableOpacity  className="mt-6 bg-blue-600 rounded-lg p-3 hover:bg-blue-500 transition ease-in-out duration-200" 
+          onPress={subscriptionSubmit}>
             <Text className="text-white text-center font-semibold">Add Subscription</Text>
         </TouchableOpacity>
         <TouchableOpacity 

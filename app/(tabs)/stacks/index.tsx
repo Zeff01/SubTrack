@@ -6,7 +6,7 @@ import { ActivityIndicator, FlatList, Text, TouchableOpacity, View } from 'react
 import { retrieveAllDocumentSubscriptionSpecificUser } from '../../../services/userService.js';
 import Subscription from '../../../types/Subscription.js';
 import { signOut, onAuthStateChanged, User  } from 'firebase/auth';
-import { auth } from "../../../config/firebase"; // Assuming db is not needed here
+import { auth } from "../../../config/firebase.js"; // Assuming db is not needed here
 
 
 
