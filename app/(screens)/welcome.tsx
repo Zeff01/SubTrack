@@ -26,12 +26,12 @@ const WelcomeScreen = () => {
       <Text className="text-center text-blue-500 font-semibold text-lg">Register</Text>
     </TouchableOpacity>
 
-     <TouchableOpacity
+     {/* <TouchableOpacity
       onPress={() => router.push("/(tabs)/home")}
       className="w-11/12 bg-gray-900 border border-blue-600 p-4 rounded-full"
     >
       <Text className="text-center text-blue-500 font-semibold text-lg">Calendar</Text>
-    </TouchableOpacity>
+    </TouchableOpacity> */}
   </View>
 );
 
