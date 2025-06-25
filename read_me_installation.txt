@@ -6,6 +6,8 @@ npm install @react-native-async-storage/async-storage
 npm install firebase @react-native-async-storage/async-storage
 npm install react-native-vector-icons
 npm install @firebase/logger
+npm install --save-dev react-native-dotenv
+
 
 
 
