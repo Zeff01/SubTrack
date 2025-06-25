@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, Alert } from "react-native";
 import { useRouter } from "expo-router";
 import { authenticateUser } from "../../services/authService";
-import { auth } from "../../config/firebase"; // Assuming db is not needed here
+import { auth } from "../../config/firebase.js"; // Assuming db is not needed here
 
 const LoginScreen = () => {
   const router = useRouter();
