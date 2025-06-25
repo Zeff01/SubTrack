@@ -4,6 +4,7 @@ npm install @react-native-picker/picker
 npm install react-native-calendars
 npm install @react-native-async-storage/async-storage
 npm install firebase @react-native-async-storage/async-storage
+npm install react-native-vector-icons
 npm install @firebase/logger
 
 
