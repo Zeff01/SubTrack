@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, Alert } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, Alert, KeyboardAvoidingView } from "react-native";
 import { useRouter } from "expo-router";
 import { authenticateUser } from "../../services/authService";
 import { auth } from "../../config/firebase.js"; // Assuming db is not needed here
@@ -33,7 +33,9 @@ const LoginScreen = () => {
   return (
   <View className="flex-1 justify-center bg-black px-6">
     <Text className="text-4xl font-bold text-white mb-10 text-center">Welcome Back</Text>
-
+    <KeyboardAvoidingView
+            behavior="padding"
+    >
     <TextInput
       className="border border-gray-700 bg-gray-900 text-white rounded-xl p-4 mb-4"
       placeholder="Email"
@@ -50,6 +52,7 @@ const LoginScreen = () => {
       value={password}
       onChangeText={setPassword}
     />
+    </KeyboardAvoidingView>
 
     <TouchableOpacity className="bg-blue-600 rounded-xl p-4 mb-6 shadow-lg shadow-blue-800/50" onPress={loginSubmit}>
       <Text className="text-center text-white font-semibold text-lg">Login</Text>
