@@ -10,9 +10,14 @@ const HomeScreen = () => {
   const navigation = useNavigation();
   const [currentDate, setCurrentDate] = useState(moment());
   const [currentDay, setCurrentDay] = useState(moment());
+  const [active, setActive] = useState(false);
+  const [selectedDay, setSelectedDay] = useState<number | null>(null);
+
 
   
     const highlightedDays = [
+      { day: 1, colors: ['#007bff'] },
+      { day: 2, colors: ['#007bff'] },
       { day: 3, colors: ['#dc3545', '#ffc107', '#00ffff', '#ffff00'] },
       { day: 22, colors: ['#dc3545', '#17a2b8'] },
       { day: 30, colors: ['#007bff'] },
@@ -205,7 +210,6 @@ const PaymentCard = ({ color, subscription, amount, dueDate }: PaymentCardProps)
                   ))}
                 </View>
         
-                {/* Calendar weeks */}
                 {getWeeks().map((week, wi) => (
                   <View key={wi} className="flex-row justify-between mb-4">
                     {week.map((day, di) => {
@@ -213,21 +217,18 @@ const PaymentCard = ({ color, subscription, amount, dueDate }: PaymentCardProps)
                       return (
                         <View key={di} className="flex-1 items-center">
                           {day ? (
-                           <View className="w-10 h-10 items-center justify-center relative">
+                            <View className="w-10 h-10 items-center justify-center relative">
                               {hl &&
                                 hl.colors.map((color, index) => {
                                   const size = 30;
-                                  const shift = index * 7; // Horizontal shift between circles
-
-                                    function countColors(colors: any) {
+                                  const shift = index * 7;
+                                  function countColors(colors: any) {
                                     return colors.reduce((acc: any, color: any) => {
                                       acc[color] = (acc[color] || 0) + 1;
                                       return acc;
                                     }, {});
                                   }
-        
                                   const uniqueColors = Object.keys(countColors(hl.colors));
- 
                                   return (
                                     <View
                                       key={index}
@@ -237,18 +238,27 @@ const PaymentCard = ({ color, subscription, amount, dueDate }: PaymentCardProps)
                                         width: size,
                                         height: size,
                                         borderRadius: size / 2,
-                                        top: 3, // small vertical adjustment
-                                       // left: shift,
-                                        left: uniqueColors.length > 1 ? shift : 2.5, // This shifts each color to the right
+                                        top: 3,
+                                        left: uniqueColors.length > 1 ? shift : 2.5,
                                         zIndex: 0,
                                       }}
                                     />
                                   );
                                 })}
 
-                              <Text className="text-xl text-gray-900 font-semibold z-10 text-center">
-                                {day}
-                              </Text>
+                              <TouchableOpacity
+                                onPress={() => setSelectedDay(day)}
+                                activeOpacity={0.7}
+                                className="z-10"
+                              >
+                                <Text
+                                  className={`text-xl font-semibold text-center ${
+                                    selectedDay === day ? 'text-green-500' : 'text-gray-900'
+                                  }`}
+                                >
+                                  {day}
+                                </Text>
+                              </TouchableOpacity>
                             </View>
                           ) : (
                             <View className="w-10 h-10" />
@@ -258,7 +268,6 @@ const PaymentCard = ({ color, subscription, amount, dueDate }: PaymentCardProps)
                     })}
                   </View>
                 ))}
-        
                     {/* Button */}
                   <View className="mt-6 items-center">
                     <TouchableOpacity className="bg-[#3AABCC] rounded-2xl shadow-md w-full h-14 justify-center"
