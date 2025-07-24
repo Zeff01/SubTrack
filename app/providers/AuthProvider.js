@@ -1,19 +1,30 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { onAuthStateChanged } from 'firebase/auth';
-import { auth } from '../../config/firebase.js'; // adjust path
+import React, { createContext, useState, useEffect, useContext } from "react";
+import { onAuthStateChanged } from "firebase/auth";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { auth } from "../firebase";
 
+const AuthContext = createContext();
 
-const AuthContext = createContext(null);
-
-
-
-const AuthProvider = ({ children }) => {
+export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      setUser(firebaseUser);
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        const token = await firebaseUser.getIdToken();
+        await AsyncStorage.setItem("userToken", token);
+        await AsyncStorage.setItem("userId", firebaseUser.uid);
+        await AsyncStorage.setItem("userEmail", firebaseUser.email);
+
+        setUser(firebaseUser);
+      } else {
+        await AsyncStorage.removeItem("userToken");
+        await AsyncStorage.removeItem("userId");
+        await AsyncStorage.removeItem("userEmail");
+
+        setUser(null);
+      }
       setAuthLoading(false);
     });
 
@@ -27,13 +38,4 @@ const AuthProvider = ({ children }) => {
   );
 };
 
-// ✅ Always return a fallback object if context is null
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    return { user: null, authLoading: true };
-  }
-  return context;
-};
-
-export default AuthProvider; // Ensure it is exported as default
+export const useAuth = () => useContext(AuthContext);
