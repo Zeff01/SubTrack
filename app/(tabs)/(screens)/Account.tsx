@@ -1,15 +1,16 @@
+import { useNavigation } from '@react-navigation/native';
 import React from 'react';
 import {
-  View,
+  Alert,
+  ScrollView,
+  Switch,
   Text,
   TouchableOpacity,
-  Image,
-  TextInput,
-  Switch,
-  ScrollView,
+  View
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import Ionicons from 'react-native-vector-icons/Ionicons';
+
+import { signOut } from 'firebase/auth';
+import { auth } from "../../../config/firebase.js"; // Assuming db is not needed here
 
 
 const AccountSettingsScreen = () => {
@@ -17,6 +18,18 @@ const AccountSettingsScreen = () => {
 
   const [isEnabled, setIsEnabled] = React.useState(false);
   const toggleSwitch = () => setIsEnabled(prev => !prev);
+
+   const handleLogout = async () => {
+    try {
+     // router.replace("/(screens)/welcome");
+      (navigation as any).navigate('Login')
+      Alert.alert("Logged out", "You have been signed out.");
+      await signOut(auth);
+    } catch (error) {
+      Alert.alert("Error", "Failed to logout. Please try again.");
+      console.error("Logout error:", error);
+    }
+  };
 
   return (
     <>
@@ -159,7 +172,8 @@ const AccountSettingsScreen = () => {
 
           <TouchableOpacity
             className={`flex-row justify-between items-center py-4`}
-            onPress={() => (navigation as any).navigate('Login')}
+           // onPress={() => (navigation as any).navigate('Login')}
+            onPress={handleLogout} 
           >
             <View>
               <Text className="font-medium text-red-600">Logout</Text>
@@ -167,6 +181,18 @@ const AccountSettingsScreen = () => {
             </View>
             <Text className="text-red-400 text-xl">{'›'}</Text>
           </TouchableOpacity>
+
+             {/* <TouchableOpacity
+            className={`flex-row justify-between items-center py-4`}
+           onPress={() => (navigation as any).navigate('Login')}
+          //  onPress={handleLogout} 
+          >
+            <View>
+              <Text className="font-medium text-red-600">Logout</Text>
+          
+            </View>
+            <Text className="text-red-400 text-xl">{'›'}</Text>
+          </TouchableOpacity> */}
       </View>
     </ScrollView>
         </>

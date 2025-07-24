@@ -7,16 +7,48 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  Alert
 } from 'react-native';
 
 import { useNavigation } from '@react-navigation/native';
+import { createUser } from "../../services/authService";
+
 
 export default function RegisterScreen() {
   const navigation = useNavigation();
-  const [name, setName] = useState('');
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+
+
+  const registerSubmit = async () => {
+      if (email === "" || password === "" || username === "" ) {
+        Alert.alert("Validation", "Please fill in all fields");
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        Alert.alert("Validation", "Password not matched");
+        return;
+      }
+  
+      try {
+        const user_info = { email, password, username }; // shorthand for object properties
+        const response =  await createUser(user_info);
+  
+        if (response.success) {
+          Alert.alert("Success", response.message);
+          (navigation as any).navigate('Login')
+         // router.push("/(screens)/login"); // Change '/home' to your desired route
+        } else {
+          Alert.alert("Login Failed", response.error);
+        }
+      } catch (error) {
+        Alert.alert("Error", "An error occurred while logging in.");
+      }
+    };
+
 
   return (
     <KeyboardAvoidingView
@@ -31,16 +63,16 @@ export default function RegisterScreen() {
 
           <TextInput
             className="border border-[#3AABCC] rounded-xl px-4 py-3 mb-4 text-base text-gray-800"
-            placeholder="Full Name"
+            placeholder="Username"
             placeholderTextColor="#9fcbdc"
-            value={name}
-            onChangeText={setName}
+            value={username}
+            onChangeText={setUsername}
             autoCapitalize="words"
           />
 
           <TextInput
             className="border border-[#3AABCC] rounded-xl px-4 py-3 mb-4 text-base text-gray-800"
-            placeholder="Email"
+            placeholder="Email Address"
             placeholderTextColor="#9fcbdc"
             keyboardType="email-address"
             autoCapitalize="none"
@@ -69,7 +101,8 @@ export default function RegisterScreen() {
           <TouchableOpacity
             className="bg-[#3AABCC] rounded-xl py-3 mb-6 shadow-md"
             activeOpacity={0.8}
-            onPress={() => alert(`Registering\nName: ${name}\nEmail: ${email}`)}
+            //onPress={() => alert(`Registering\nName: ${name}\nEmail: ${email}`)}
+            onPress={registerSubmit}
           >
             <Text className="text-white font-bold text-lg text-center">REGISTER</Text>
           </TouchableOpacity>

@@ -9,10 +9,19 @@ import AccountRecovery from '../(screens)/AccountRecovery';
 import SubscriptionDetails from '../(tabs)/(screens)/SubscriptionDetails'; 
 import EditSubscription from '../(tabs)/(screens)/EditSubscription'; 
 
+import { useAuth } from '../providers/AuthProvider'; // Import your AuthProvider
 
-const Stack = createNativeStackNavigator();
 
 const RootStack = () => {
+  //const authContext = useAuth();
+  const Stack = createNativeStackNavigator();
+  // const { user } = authContext;
+
+  //   // If user does not exist
+  // if (!user) {
+  //   //return <LoginScreen />;
+  // }
+
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="MainTabs" component={TabNavigator} />

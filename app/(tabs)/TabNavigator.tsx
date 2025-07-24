@@ -6,14 +6,24 @@ import HomeStack from './HomeStack';
 import SubscriptionStack from './SubscriptionStack';
 import AccountStack from './AccountStack';
 
-import Calendar from './Calendar';
+// import Calendar from './Calendar';
+// import Plus from './(screens)/AddSubscription';
+// import PlusButton from '../components/PlusButton';
 
-import Plus from './(screens)/AddSubscription';
-import PlusButton from '../components/PlusButton';
+import LoginScreen from '../(screens)/Login';
+import { useAuth } from '../providers/AuthProvider'; // Import your AuthProvider
 
-const Tab = createBottomTabNavigator();
 
 const TabNavigator = () => {
+  const authContext = useAuth();
+  const Tab = createBottomTabNavigator();
+  const { user } = authContext;
+
+  // If user does not exist
+  if (!user) {
+    return <LoginScreen />;
+  }
+  
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({

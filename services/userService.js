@@ -16,6 +16,32 @@ const getCurrentDateTime = () => {
   return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 };
 
+export const checkIfUsernameExists = async (username) => {
+  try {
+    const usersCol = collection(db, "users");
+    const q = firestore_query(usersCol, where("username", "==", username));
+    const snapshot = await getDocs(q);
+
+    if (!snapshot.empty) {
+      return {
+        exists: true,
+        message: "Username already exists.",
+      };
+    }
+
+    return {
+      exists: false,
+      message: "Username is available.",
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error.message || "Failed due to a network or server error.",
+    };
+  }
+};
+
+
 
 
 export const retrieveAllDocumentSubscriptionMonthlySpecificUser = async (user_id, date_info) => {
@@ -193,11 +219,8 @@ export const createDocumentUser = async (user_info) => {
     const user = await addDoc(collection(db, "users"), {
       uid: user_info.uid,
       email: user_info.email,
-      name: user_info.name,
-      phone: user_info.phone
+      username: user_info.username,
     });
-
-   // console.log("Document written with ID: ", user.id);
 
     return { 
         success: true,

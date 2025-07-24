@@ -2,7 +2,7 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
 } from "firebase/auth";
-import { createDocumentUser } from "./userService.js";
+import { createDocumentUser, checkIfUsernameExists } from "./userService.js";
 import { auth } from "../config/firebase.js";
 
 
@@ -10,19 +10,27 @@ import { auth } from "../config/firebase.js";
 
 export const createUser = async (user_info) => {
   try {
-   const userCredential = await createUserWithEmailAndPassword(
-		auth,
-		user_info.email,
-		user_info.password,
-	);
+    const result = await checkIfUsernameExists(user_info.username);
+
+    if (result.exists) {
+      return {
+        success: false,
+        error: result.message || "Registration failed due to username already exist.",
+      };
+    }
+
+    const userCredential = await createUserWithEmailAndPassword(
+      auth,
+      user_info.email,
+      user_info.password,
+	  );
 
     const user = userCredential.user;
 
     const pass_user_info = {
         uid: user.uid,
         email: user.email,
-        name: user_info.name,
-        phone: user_info.phone,
+        username: user_info.username
     };
 
     const data = await createDocumentUser(pass_user_info);
@@ -33,8 +41,6 @@ export const createUser = async (user_info) => {
         data: userCredential.user 
     };
   } catch (error) {
-        console.log(error)
-
     return {
         success: false,
         error: error.message || "Registration failed due to a network or server error.",

@@ -7,16 +7,18 @@ import { Slot } from 'expo-router';
 
 
 import RootStack from './stacks/RootStack';
-
+import AuthProvider from './providers/AuthProvider';
 
 
 export default function App() {
 
   return (
         <>
-            {/* <Slot />  */}
-            <RootStack />
-            <StatusBar style="auto" />
+            <AuthProvider>
+              {/* <Slot />  */}
+              <RootStack />
+              <StatusBar style="auto" />
+            </AuthProvider>
         </>
   );
 }
