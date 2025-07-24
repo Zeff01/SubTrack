@@ -27,7 +27,7 @@ const TabNavigator = () => {
         },
         tabBarStyle: {
           backgroundColor: '#fff',
-          height: 90,
+          height: 100,
           borderTopColor: '#e5e7eb',
         },
         tabBarIcon: ({ color, focused }) => {
@@ -53,8 +53,8 @@ const TabNavigator = () => {
       })}
     >
       <Tab.Screen name="Home" component={HomeStack} />
-      <Tab.Screen name="Calendar" component={Calendar} />
-      <Tab.Screen
+       {/* <Tab.Screen name="Calendar" component={Calendar} /> */}
+      {/*<Tab.Screen
         name="Plus"
         component={Plus}
         options={{
@@ -63,7 +63,7 @@ const TabNavigator = () => {
             <PlusButton onPress={props.onPress || (() => {})} />
           ),
         }}
-      />
+      /> */}
       
       <Tab.Screen name="Subscriptions" component={SubscriptionStack} />
       <Tab.Screen name="Account" component={AccountStack} />

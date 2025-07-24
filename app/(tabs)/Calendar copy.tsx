@@ -9,7 +9,7 @@ const Calendar = () => {
   const [currentDate, setCurrentDate] = useState(moment());
 
   const highlightedDays = [
-    { day: 3, colors: ['#dc3545', '#ffc107', '#ffff', '#ffff00'] },
+    { day: 3, colors: ['#dc3545', '#ffc107', '#ffff'] },
     { day: 22, colors: ['#28a745', '#17a2b8'] },
     { day: 30, colors: ['#007bff'] },
   ];
@@ -87,40 +87,24 @@ const Calendar = () => {
               return (
                 <View key={di} className="flex-1 items-center">
                   {day ? (
-                    <View className="w-10 h-10 items-center justify-center relative">
-                      {hl &&
-                        hl.colors.map((color, index) => {
-                          const size = 30; // Same size for all
-                          const shift = index * 7; // Horizontal shift between circles
+                   <View className="w-10 h-10 items-center justify-center relative rounded-full overflow-hidden">
+  {hl && (
+    <View className="absolute inset-0 flex-row">
+      {hl.colors.map((color, index) => (
+        <View
+          key={index}
+          style={{
+            backgroundColor: color,
+            width: `${100 / hl.colors.length}%`,
+            height: '100%',
+          }}
+        />
+      ))}
+    </View>
+  )}
+  <Text className="text-xl text-gray-900 font-semibold z-10">{day}</Text>
+</View>
 
-                          function countColors(colors: any) {
-                            return colors.reduce((acc: any, color: any) => {
-                              acc[color] = (acc[color] || 0) + 1;
-                              return acc;
-                            }, {});
-                          }
-
-                          const uniqueColors = Object.keys(countColors(hl.colors));
-
-                          return (
-                            <View
-                              key={index}
-                              style={{
-                                backgroundColor: color,
-                                position: 'absolute',
-                                width: size,
-                                height: size,
-                                borderRadius: size / 2,
-                                top: 2,
-                                left: shift, // This shifts each color to the right
-                                //left: uniqueColors.length > 1 ? shift : 0, // This shifts each color to the right
-                                zIndex: 0,
-                              }}
-                            />
-                          );
-                        })}
-                      <Text className="text-xl text-gray-900 font-semibold z-10">{day}</Text>
-                    </View>
                   ) : (
                     <View className="w-10 h-10" />
                   )}

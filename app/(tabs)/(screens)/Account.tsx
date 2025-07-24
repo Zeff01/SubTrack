@@ -22,12 +22,12 @@ const AccountSettingsScreen = () => {
     <>
        <View className="pt-12 pb-6 px-6 bg-[#D9D9D9] rounded-b-3xl">
           <View className="relative items-center justify-center">
-            <TouchableOpacity
+            {/* <TouchableOpacity
               onPress={() => navigation.goBack()}
               className="absolute left-0 px-4"
             >
               <Ionicons name="chevron-back" size={25} color="black" />
-            </TouchableOpacity>
+            </TouchableOpacity> */}
             <Text className="text-xl font-semibold text-gray-800">
                Account Settings
             </Text>

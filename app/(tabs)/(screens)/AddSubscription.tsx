@@ -30,10 +30,10 @@ const AddSubscriptionScreen = () => {
     setShow(false);
   };
 
-   const appNames = [
-    { key: '1', value: 'App 1' },
-    { key: '2', value: 'App 2' },
-  ];
+  //  const appNames = [
+  //   { key: '1', value: 'App 1' },
+  //   { key: '2', value: 'App 2' },
+  // ];
   const cycles = [
     { key: '1', value: 'Monthly' },
     { key: '2', value: 'Yearly' },
@@ -64,12 +64,13 @@ return (
   <>
         <View className="pt-12 pb-6 px-6 bg-[#D9D9D9] rounded-b-3xl">
           <View className="relative items-center justify-center">
-            <TouchableOpacity
-              onPress={() => navigation.goBack()}
+            {/* <TouchableOpacity
+             // onPress={() => navigation.goBack()}
+              onPress={() => (navigation as any).navigate('Home')}
               className="absolute left-0 px-4"
             >
               <Ionicons name="chevron-back" size={25} color="black" />
-            </TouchableOpacity>
+            </TouchableOpacity> */}
             <Text className="text-xl font-semibold text-gray-800">
                Add Subscription
             </Text>
@@ -88,6 +89,22 @@ return (
               />
             </View>
 
+             <View>
+              <Text className="text-sm mb-1 mt-4">App Name</Text>
+              <TextInput 
+                className="border border-gray-600 rounded-xl p-4" 
+                placeholder="Enter cost" 
+                keyboardType="numeric"
+                value={appName}
+                onChangeText={setAppName}
+              />
+            </View>
+
+            {/* <View >
+              <Text className="text-sm mb-1 mt-3">App Name</Text>
+              <SelectList setSelected={setAppName} data={appNames} placeholder="Select App" />
+            </View> */}
+
             <View>
                 <Text className="text-sm mb-1 mt-4">Due Date</Text>
                 <TouchableOpacity onPress={() => setShow(true)} 
@@ -95,11 +112,6 @@ return (
                 >
                   <Text className="text-black">{selectedDate.toLocaleDateString()}</Text>
                 </TouchableOpacity>
-            </View>
-
-            <View >
-              <Text className="text-sm mb-1 mt-3">App Name</Text>
-              <SelectList setSelected={setAppName} data={appNames} placeholder="Select App" />
             </View>
 
             <View>

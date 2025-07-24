@@ -19,12 +19,12 @@ const SubscriptionScreen = () => {
     <>
     <View className="pt-12 pb-6 px-6 bg-[#D9D9D9] rounded-b-3xl">
       <View className="relative items-center justify-center">
-        <TouchableOpacity
+        {/* <TouchableOpacity
           onPress={() => navigation.goBack()}
           className="absolute left-0 px-4"
         >
           <Ionicons name="chevron-back" size={25} color="black" />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
         <Text className="text-xl font-semibold text-gray-800">
            Subscriptions
         </Text>
@@ -38,7 +38,18 @@ const SubscriptionScreen = () => {
 
       {/* Scrollable Content */}
       <ScrollView className="flex-1 px-4">
+        {/* <View className="mt-6 items-center">
+                    <TouchableOpacity className="bg-[#3AABCC] rounded-xl shadow-md w-full h-14 justify-center"
+                      onPress={() => (navigation as any).navigate('Plus')}
+                    >
+                      <Text className="text-white font-semibold text-xl text-center">
+                         Add Subscription
+                      </Text>
+                    </TouchableOpacity>
+                  </View> */}
+        
        <View className="flex-row items-center mt-4 py-2">
+        
           <View style={{
               flexDirection: 'row',
               alignItems: 'center',

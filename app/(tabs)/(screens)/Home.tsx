@@ -1,13 +1,36 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity,  } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
 
 import { PaymentCardProps } from '../../../types/PaymentCardPropsType'; // Adjust path as needed
-
+import moment from 'moment';
 
 const HomeScreen = () => {
   const navigation = useNavigation();
+  const [currentDate, setCurrentDate] = useState(moment());
+  const [currentDay, setCurrentDay] = useState(moment());
+
+  
+    const highlightedDays = [
+      { day: 3, colors: ['#dc3545', '#ffc107', '#00ffff', '#ffff00'] },
+      { day: 22, colors: ['#dc3545', '#17a2b8'] },
+      { day: 30, colors: ['#007bff'] },
+    ];
+  
+    const getWeeks = () => {
+      const days = [];
+      const firstDayIdx = currentDate.clone().startOf('month').day();
+      for (let i = 0; i < firstDayIdx; i++) days.push(null);
+      for (let d = 1; d <= currentDate.daysInMonth(); d++) days.push(d);
+      const weeks = [];
+      for (let i = 0; i < days.length; i += 7) {
+        const week = days.slice(i, i + 7);
+        while (week.length < 7) week.push(null);
+        weeks.push(week);
+      }
+      return weeks;
+    };
   
   const subscriptions = [
     { name: 'Netflix', price: '₱600', dueDate: 'Monthly, June 30, 2025' },
@@ -28,7 +51,7 @@ const HomeScreen = () => {
 const PaymentCard = ({ color, subscription, amount, dueDate }: PaymentCardProps) => {
   return (
     <View
-      className="w-52 rounded-b-3xl p-4 mr-4  bg-white border"
+      className="w-52 rounded-3xl p-4 mr-4  bg-white border"
       // style={{ backgroundColor: color }}
     >
       <Text className="text-right text-2xl font-extrabold text-gray-900">{amount}</Text>
@@ -67,10 +90,10 @@ const PaymentCard = ({ color, subscription, amount, dueDate }: PaymentCardProps)
       </View>
 
       {/* Scrollable Content */}
-      <ScrollView className="flex-1 px-4">
+      <ScrollView className="flex-1 px-4 ">
         <View className="mt-4">
           <Text className="text-gray-700 text-xl font-bold">Total Monthly Payment</Text>
-          <View className="flex-row items-center mt-4 bg-blue-500 rounded-3xl p-5">
+          <View className="flex-row items-center mt-4 bg-blue-400 rounded-3xl p-5">
             <Text className="text-2xl font-bold flex-1 text-gray-800">June 2025</Text>
             <TouchableOpacity className="ml-2 p-2 flex-row items-center">
               <Text className="text-white text-center font-semibold">₱2600</Text>
@@ -80,7 +103,20 @@ const PaymentCard = ({ color, subscription, amount, dueDate }: PaymentCardProps)
         </View>
 
          <View className="mt-4 bg-white flex-1 justify-center align-center">
-            <Text className="text-xl font-bold">Upcoming Payments</Text>
+            {/* <Text className="text-xl font-bold">Upcoming Payments</Text> */}
+
+            <View className="mt-4">
+              <View className="flex-row justify-between items-center w-full">
+                {/* <Text className="text-gray-700 text-2xl font-bold">Upcoming Payments</Text>
+                 */}
+                <Text className="text-gray-700 text-xl font-bold">Upcoming Payments</Text>
+                <TouchableOpacity 
+                  onPress={() => (navigation as any).navigate('Subscriptions', { screen: 'subscriptions' })}
+                >
+                  {/* <Text className=" text-xs underline text-[#3AABCC]">See All</Text> */}
+                </TouchableOpacity>                  
+              </View>
+            </View>
             <ScrollView horizontal={true} className="py-4 bg-transparent">
                 <View className="flex-row">
                     <PaymentCard 
@@ -135,7 +171,109 @@ const PaymentCard = ({ color, subscription, amount, dueDate }: PaymentCardProps)
             </ScrollView>
         </View>
 
-        <View className="mt-4">
+        <ScrollView className="flex-1 bg-white">
+              <View className="pt-2 pb-6 px-3 flex-row justify-between items-center">
+                <View className="flex items-start justify-start">
+                  <Text className="text-2xl font-semibold text-center flex-1">{currentDate.format('MMMM YYYY')}</Text>
+                  <Text className="text-base text-blue-600 mt-2 text-center">
+                    {`${currentDay.format('dddd')}, ${currentDay.format('MMMM')} ${currentDay.format('DD')}`}
+                  </Text>
+                </View>
+        
+              <View className="flex-row items-center justify-between">
+                  <TouchableOpacity onPress={() => setCurrentDate(m => m.clone().subtract(1, 'month'))}>
+                    <Ionicons className="mr-6" name="chevron-back" size={24} color="black" />
+                  </TouchableOpacity>
+                  
+                  {/* <Text className="text-lg font-bold">June 2025</Text> */}
+                  
+                  <TouchableOpacity onPress={() => setCurrentDate(m => m.clone().add(1, 'month'))}>
+                    <Ionicons className="ml-4" name="chevron-forward" size={24} color="black" />
+                  </TouchableOpacity>
+                </View>
+              </View>
+        
+        
+        
+              <View >
+                {/* Weekday headers */}
+                <View className="flex-row justify-between mb-2">
+                  {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
+                    <Text key={d} className="text-center flex-1 text-gray-600 font-semibold">
+                      {d}
+                    </Text>
+                  ))}
+                </View>
+        
+                {/* Calendar weeks */}
+                {getWeeks().map((week, wi) => (
+                  <View key={wi} className="flex-row justify-between mb-4">
+                    {week.map((day, di) => {
+                      const hl = highlightedDays.find(h => h.day === day);
+                      return (
+                        <View key={di} className="flex-1 items-center">
+                          {day ? (
+                           <View className="w-10 h-10 items-center justify-center relative">
+                              {hl &&
+                                hl.colors.map((color, index) => {
+                                  const size = 30;
+                                  const shift = index * 7; // Horizontal shift between circles
+
+                                    function countColors(colors: any) {
+                                    return colors.reduce((acc: any, color: any) => {
+                                      acc[color] = (acc[color] || 0) + 1;
+                                      return acc;
+                                    }, {});
+                                  }
+        
+                                  const uniqueColors = Object.keys(countColors(hl.colors));
+ 
+                                  return (
+                                    <View
+                                      key={index}
+                                      style={{
+                                        backgroundColor: color,
+                                        position: 'absolute',
+                                        width: size,
+                                        height: size,
+                                        borderRadius: size / 2,
+                                        top: 3, // small vertical adjustment
+                                       // left: shift,
+                                        left: uniqueColors.length > 1 ? shift : 2.5, // This shifts each color to the right
+                                        zIndex: 0,
+                                      }}
+                                    />
+                                  );
+                                })}
+
+                              <Text className="text-xl text-gray-900 font-semibold z-10 text-center">
+                                {day}
+                              </Text>
+                            </View>
+                          ) : (
+                            <View className="w-10 h-10" />
+                          )}
+                        </View>
+                      );
+                    })}
+                  </View>
+                ))}
+        
+                    {/* Button */}
+                  <View className="mt-6 items-center">
+                    <TouchableOpacity className="bg-[#3AABCC] rounded-2xl shadow-md w-full h-14 justify-center"
+                      onPress={() => (navigation as any).navigate('Subscriptions', { screen: 'add_subscriptions' })}
+                    >
+                      <Text className="text-white font-semibold text-xl text-center">
+                         Add Subscription
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+        
+              </View>
+            </ScrollView>
+
+        {/* <View className="mt-4">
            <View className="flex-row justify-between items-center w-full">
             <Text className="text-gray-700 text-2xl font-bold">My Subscriptions</Text>
             <TouchableOpacity 
@@ -144,13 +282,13 @@ const PaymentCard = ({ color, subscription, amount, dueDate }: PaymentCardProps)
               <Text className=" text-xs underline text-[#3AABCC]">See All</Text>
             </TouchableOpacity>                  
           </View>
-        </View>
+        </View> */}
 
-        <View className="mt-4">
+        <View className="mt-6 border-t-2 pt-6">
           {subscriptions.map((subscription, index) => (
-            <View key={index}  className="py-6 px-4 my-1 flex-row justify-between mt-2  items-center rounded-3xl shadow-xl bg-white">
+            <View key={index}  className="py-6 px-4 my-1 flex-row justify-between mt-2  items-center rounded-3xl shadow-xl bg-gray-300">
               <View className="flex justify-center items-center  min-h-16">
-                <View className="bg-gray-400 rounded-full h-10 w-10 shadow-xl" />
+                <View className="bg-gray-100 rounded-full h-10 w-10 shadow-xl" />
               </View>
               <View className="min-h-16 flex justify-center  items-start">
                 <Text className="font-bold">{subscription.name}</Text>
@@ -162,7 +300,7 @@ const PaymentCard = ({ color, subscription, amount, dueDate }: PaymentCardProps)
               </View>
             </View>
           ))}
-        </View>
+        </View> 
       </ScrollView>
     </View>
   );
