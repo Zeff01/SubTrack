@@ -254,7 +254,7 @@ const PaymentCard = ({ color, subscription, amount, dueDate }: PaymentCardProps)
                              
                                 <Text
                                   className={`text-xl font-semibold text-center ${
-                                    selectedDay === day ? 'text-green-500' : 'text-gray-900'
+                                    selectedDay === day ? 'text-[#3AABCC]' : 'text-gray-900'
                                   }`}
                                 >
                                   {day}
