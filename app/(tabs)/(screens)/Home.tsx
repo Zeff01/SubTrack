@@ -1,10 +1,17 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity,  } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, Alert  } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
 
 import { PaymentCardProps } from '../../../types/PaymentCardPropsType'; // Adjust path as needed
 import moment from 'moment';
+import { useFocusEffect } from '@react-navigation/native';
+
+import { getUsernameByEmail } from "../../../services/userService";
+import { onAuthStateChanged  } from 'firebase/auth';
+import { auth } from "../../../config/firebase.js"; // Assuming db is not needed here
+
+
 
 const HomeScreen = () => {
   const navigation = useNavigation();
@@ -12,9 +19,31 @@ const HomeScreen = () => {
   const [currentDay, setCurrentDay] = useState(moment());
   const [active, setActive] = useState(false);
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
+  const [username, setUsername] = useState<string | null>('');
 
 
-  
+    const getUsername = async (email : string) => {
+
+    try {
+      const response =  await getUsernameByEmail(email);
+
+      if (response.success) {
+        setUsername(response.username);
+      } 
+      setUsername(null);
+    } catch (error) {
+      Alert.alert("Error", "An error occurred while logging in.");
+    }
+  };
+
+    useFocusEffect(
+      useCallback(() => {
+        const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+          getUsername(firebaseUser?.email as string);
+        });  
+      }, [])
+    );
+
     const highlightedDays = [
       { day: 1, colors: ['#007bff'] },
       { day: 2, colors: ['#007bff'] },
@@ -81,7 +110,7 @@ const PaymentCard = ({ color, subscription, amount, dueDate }: PaymentCardProps)
         <View className="flex-row justify-between items-center">
           <View className="flex-row items-center">
             <View className="w-10 h-10 bg-gray-400 rounded-full mr-2" />
-            <Text className="text-xl font-semibold text-gray-800">Hello, Kristine!</Text>
+            <Text className="text-xl font-semibold text-gray-800">Hello, {username}!</Text>
           </View>
           <View className="flex-row">
             <TouchableOpacity className="mr-2">

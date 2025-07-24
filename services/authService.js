@@ -12,7 +12,7 @@ export const createUser = async (user_info) => {
   try {
     const result = await checkIfUsernameExists(user_info.username);
 
-    if (result.exists) {
+    if (result.success) {
       return {
         success: false,
         error: result.message || "Registration failed due to username already exist.",

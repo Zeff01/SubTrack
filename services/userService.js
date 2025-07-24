@@ -16,6 +16,39 @@ const getCurrentDateTime = () => {
   return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 };
 
+
+export const getUsernameByEmail = async (email) => {
+  try {
+    const usersCol = collection(db, "users");
+    const q = firestore_query(usersCol, where("email", "==", email));
+    const snapshot = await getDocs(q);
+
+    if (!snapshot.empty) {
+      const userDoc = snapshot.docs[0];
+      const userData = userDoc.data();
+
+      return {
+        success: true,
+        username: userData.username || null, // or userData.username depending on your schema
+        message: "Email exists and username retrieved.",
+      };
+    }
+
+    return {
+      success: false,
+      username:  null, // or userData.username depending on your schema
+      message: "No user found with this email.",
+    };
+  } catch (error) {
+    return {
+      success: false,
+      username:  null, // or userData.username depending on your schema
+      error: error.message || "Failed due to a network or server error.",
+    };
+  }
+};
+
+
 export const checkIfUsernameExists = async (username) => {
   try {
     const usersCol = collection(db, "users");
@@ -24,13 +57,13 @@ export const checkIfUsernameExists = async (username) => {
 
     if (!snapshot.empty) {
       return {
-        exists: true,
+        success: true,
         message: "Username already exists.",
       };
     }
 
     return {
-      exists: false,
+      success: false,
       message: "Username is available.",
     };
   } catch (error) {
