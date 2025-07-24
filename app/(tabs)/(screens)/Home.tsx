@@ -215,7 +215,12 @@ const PaymentCard = ({ color, subscription, amount, dueDate }: PaymentCardProps)
                     {week.map((day, di) => {
                       const hl = highlightedDays.find(h => h.day === day);
                       return (
-                        <View key={di} className="flex-1 items-center">
+                        <TouchableOpacity
+                          onPress={() => setSelectedDay(day)}
+                          activeOpacity={0.7}
+                          key={di}
+                        >
+                        <View  className="flex-1 items-center">
                           {day ? (
                             <View className="w-10 h-10 items-center justify-center relative">
                               {hl &&
@@ -246,11 +251,7 @@ const PaymentCard = ({ color, subscription, amount, dueDate }: PaymentCardProps)
                                   );
                                 })}
 
-                              <TouchableOpacity
-                                onPress={() => setSelectedDay(day)}
-                                activeOpacity={0.7}
-                                className="z-10"
-                              >
+                             
                                 <Text
                                   className={`text-xl font-semibold text-center ${
                                     selectedDay === day ? 'text-green-500' : 'text-gray-900'
@@ -258,12 +259,12 @@ const PaymentCard = ({ color, subscription, amount, dueDate }: PaymentCardProps)
                                 >
                                   {day}
                                 </Text>
-                              </TouchableOpacity>
                             </View>
                           ) : (
                             <View className="w-10 h-10" />
                           )}
                         </View>
+                        </TouchableOpacity>
                       );
                     })}
                   </View>
