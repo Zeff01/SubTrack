@@ -305,6 +305,45 @@ export const updateDocumentSubscription = async (docId, subscription_info) => {
   }
 };
 
+
+export const updateDocumentUserProfileByUid = async (uid, user_info) => {
+  try {
+    const usersCol = collection(db, "users");
+    const q = firestore_query(usersCol, where("uid", "==", uid));
+    const snapshot = await getDocs(q);
+
+    if (snapshot.empty) {
+      return {
+        success: false,
+        message: `No user found with uid "${uid}".`,
+        data: []
+      };
+    }
+
+    // assuming uid is unique, take the first matching document
+    const userDoc = snapshot.docs[0];
+    const docRef = userDoc.ref;
+
+    await updateDoc(docRef, {
+     // email: user_info.email,
+      username: user_info.username
+    });
+
+
+    return {
+      success: true,
+      message: "User profile successfully updated.",
+      data: []
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error.message || "Failed due to a network or server error.",
+    };
+  }
+};
+
+
 export const updateDocumentUser = async (docId, user_info) => {
   try {
     const docRef = doc(db, "users", docId);

@@ -17,10 +17,10 @@ import { useAuth } from '../providers/AuthProvider'; // Import your AuthProvider
 const TabNavigator = () => {
   const authContext = useAuth();
   const Tab = createBottomTabNavigator();
-  const { user } = authContext;
+  const { user, authLoading } = authContext;
 
   // If user does not exist
-  if (!user) {
+  if (!user && authLoading == false) {
     return <LoginScreen />;
   }
   

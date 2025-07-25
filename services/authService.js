@@ -1,10 +1,63 @@
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  updatePassword,
+  signOut,
+  updateEmail,
+  sendEmailVerification
 } from "firebase/auth";
-import { createDocumentUser, checkIfUsernameExists } from "./userService.js";
+import { createDocumentUser, checkIfUsernameExists, updateDocumentUserProfileByUid } from "./userService.js";
 import { auth } from "../config/firebase.js";
 
+
+
+export const changeProfile = async (current_user, user_info) => {
+  try {
+    const user = auth.currentUser;
+
+    if (!current_user) {
+      throw new Error("No authenticated user found.");
+    }
+
+    await updateDocumentUserProfileByUid(current_user.uid, user_info)
+    //await updateEmail(user, user_info.email);
+    //await signOut(auth);
+
+    return {
+      success: true,
+      message: "Profile successfully updated.",
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error.message || "Failed to update profile.",
+    };
+  }
+};
+
+
+export const changePassword = async (current_user, newPassword) => {
+  try {
+    const user = auth.currentUser;
+
+    if (!current_user) {
+      throw new Error("No authenticated user found.");
+    }
+
+    await updatePassword(user, newPassword);
+    await signOut(auth);
+
+    return {
+      success: true,
+      message: "Password successfully updated.",
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error.message || "Failed to update password.",
+    };
+  }
+};
 
 
 

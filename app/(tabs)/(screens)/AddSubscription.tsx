@@ -12,6 +12,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import ColorModal from '../../modals/SelectColorModal';
 import { useAuth } from '../../providers/AuthProvider';
 
+import { cycles, reminders } from '../../modules/constants'; // Adjust path as needed
 
 const AddSubscriptionScreen = () => {
   const navigation = useNavigation();
@@ -38,24 +39,6 @@ const AddSubscriptionScreen = () => {
     }
     setShow(false);
   };
-
-  //  const appNames = [
-  //   { key: '1', value: 'App 1' },
-  //   { key: '2', value: 'App 2' },
-  // ];
-
-  const cycles = [
-    { key: 'weekly', value: 'Weekly' },
-    { key: 'monthly', value: 'Monthly'},
-    { key: 'quarterly', value: 'Quarterly'},
-    { key: 'yearly', value: 'Yearly' },
-  ];
-
-  const reminders = [
-    { key: '1_day_before', value: '1 Day Before' },
-    { key: '3_day_before', value: '3 Day Before' },
-    { key: '1_week_before', value: '1 Week Before' },
-  ];
 
 
   const reset = async () => {

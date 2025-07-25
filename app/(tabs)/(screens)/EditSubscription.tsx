@@ -10,6 +10,7 @@ import { useNavigation } from '@react-navigation/native';
 import { User } from 'firebase/auth';
 
 
+
 import LoginScreen from '../../(screens)/Login';
 import { useAuth } from '../../providers/AuthProvider'; // Import your AuthProvider
 import { useRoute } from '@react-navigation/native';
@@ -18,6 +19,7 @@ import ColorModal from '../../modals/SelectColorModal';
 import { useFocusEffect } from '@react-navigation/native';
 
 import { updateDocumentSubscription } from '../../../services/userService';
+import { cycles, reminders } from '../../modules/constants'; // Adjust path as needed
 
 
 const EditSubscriptionScreen = () => {
@@ -71,23 +73,6 @@ const EditSubscriptionScreen = () => {
   };
 
 
-  const getReminderLabel = (key: string) => {
-      const reminder = reminders.find(r => r.key === key);
-      return reminder ? reminder.value : key;
-  };
-
-  const reminders = [
-    { key: '1_day_before', value: '1 Day Before' },
-    { key: '3_day_before', value: '3 Day Before' },
-    { key: '1_week_before', value: '1 Week Before' },
-  ];
-
-  const cycles = [
-    { key: 'weekly', value: 'Weekly' },
-    { key: 'monthly', value: 'Monthly'},
-    { key: 'quarterly', value: 'Quarterly'},
-    { key: 'yearly', value: 'Yearly' },
-  ];
 
   const defaultReminder = reminders.find(item => item.key === remindMe);
   const defaultCycle = cycles.find(item => item.key === cycle);

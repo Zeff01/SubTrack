@@ -30,15 +30,11 @@ const HomeScreen = () => {
   useFocusEffect(
       useCallback(() => {
           setUserData(user);
-      }, [authLoading, user])
+          getUsername(userData?.email as string);
+      }, [authLoading, user, userData])
   );
 
-  useFocusEffect(
-      useCallback(() => {
-        getUsername(userData?.email as string);
-      }, [])
-  );
-
+  
   const getUsername = async (email : string) => {
     try {
       const response =  await getUsernameByEmail(email);

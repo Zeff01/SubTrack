@@ -137,38 +137,46 @@ const SubscriptionScreen = () => {
         </View>
 
         <View className="mt-4">
-          {filteredSubscriptions.map((subscription, index) => (
-            <TouchableOpacity key={index}  
-              className="py-6 px-4 my-1 flex-row justify-between  items-center rounded-3xl shadow-xl bg-white"
-              // onPress={() => (navigation as any).navigate('Subscriptions', { screen: 'subscription_details' })}
-              onPress={() => (navigation as any).navigate('SubscriptionDetails', { subscription })}
-            >
-              <View className="flex justify-center items-center  min-h-16">
-                <View className="bg-gray-400 rounded-full h-10 w-10 shadow-xl" />
-              </View>
-              <View className="min-h-16 max-w-52 min-w-52 flex justify-center items-start">
-                <Text
-                  className="font-bold text-base"
-                  numberOfLines={1}
-                  ellipsizeMode="tail"
-                >
-                  {subscription.app_name}
-                </Text>
-                <Text
-                  className="text-sm text-gray-600"
-                  numberOfLines={1}
-                  ellipsizeMode="tail"
-                >
-                  {subscription.cycle.charAt(0).toUpperCase() + subscription.cycle.slice(1)}, {formatDate(subscription.due_date)}
-                </Text>
-              </View>
+          {filteredSubscriptions.length === 0 ? (
+            <View className="items-center py-6">
+              <Text className="text-gray-500 text-lg ">No records found</Text>
+            </View>
+          ) : (
+            filteredSubscriptions.map((subscription, index) => (
+              <TouchableOpacity
+                key={index}
+                className="py-6 px-4 my-1 flex-row justify-between items-center rounded-3xl shadow-xl bg-white"
+                onPress={() =>
+                  (navigation as any).navigate('SubscriptionDetails', { subscription })
+                }
+              >
+                <View className="flex justify-center items-center min-h-16">
+                  <View className="bg-gray-400 rounded-full h-10 w-10 shadow-xl" />
+                </View>
+                <View className="min-h-16 max-w-52 min-w-52 flex justify-center items-start">
+                  <Text
+                    className="font-bold text-base"
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
+                  >
+                    {subscription.app_name}
+                  </Text>
+                  <Text
+                    className="text-sm text-gray-600"
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
+                  >
+                    {subscription.cycle.charAt(0).toUpperCase() + subscription.cycle.slice(1)}, {formatDate(subscription.due_date)}
+                  </Text>
+                </View>
 
-              <View className="flex-row justify-between items-center min-h-16">
-                <Text>₱{subscription.cost}</Text>
-                <Ionicons name="chevron-forward" size={25} color="black" className="ml-2" />
-              </View>
-            </TouchableOpacity>
-          ))}
+                <View className="flex-row justify-between items-center min-h-16">
+                  <Text>₱{subscription.cost}</Text>
+                  <Ionicons name="chevron-forward" size={25} color="black" className="ml-2" />
+                </View>
+              </TouchableOpacity>
+            ))
+          )}
         </View>
       </ScrollView>
     </View>

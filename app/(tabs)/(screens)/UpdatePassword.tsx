@@ -5,12 +5,19 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
+  Alert
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
+import { changePassword } from '../../../services/authService';
+import { useAuth } from '../../providers/AuthProvider'; // Import your AuthProvider
+
+
 
 const UpdatePasswordScreen = () => {
   const navigation = useNavigation();
+  const authContext = useAuth();
+  const { user, authLoading } = authContext;
 
   const [form, setForm] = useState({
     currentPassword: '',
@@ -22,19 +29,30 @@ const UpdatePasswordScreen = () => {
     setForm({ ...form, [key]: value });
   };
 
-  const handleSave = () => {
-    if (form.newPassword !== form.confirmPassword) {
-      alert('New password and confirmation do not match.');
-      return;
-    }
 
-    console.log('Password updated:', form);
-    // Add API call or password update logic
-  };
+    const handleSave = async () => {
+      if (form.newPassword !== form.confirmPassword) {
+        alert('New password and confirmation do not match.');
+        return;
+      }
+  
+      try {
+        const response = await changePassword(user, form.newPassword); // Call your Firebase update method
+
+        if (response.success) {
+          Alert.alert("Success", response.message);
+          (navigation as any).navigate('Login')
+        } else {
+          Alert.alert("Update Password Failed", response.error);
+        }
+      } catch (error) {
+        Alert.alert("Error", "An error occurred while logging in.");
+      }
+    };
+
 
   return (
-    <>
-     
+    <>     
      <View className="pt-12 pb-6 px-6 bg-[#D9D9D9] rounded-b-3xl">
           <View className="relative items-center justify-center">
             <TouchableOpacity
@@ -53,7 +71,7 @@ const UpdatePasswordScreen = () => {
       <ScrollView className="flex-1 bg-gray-50 px-4 py-6">
         <View className="bg-white rounded-2xl p-6 shadow-md">
           {/* Current Password */}
-          <View className="mb-4">
+          {/* <View className="mb-4">
             <Text className="text-gray-700 mb-1">Current Password</Text>
             <TextInput
               className="border border-gray-200 p-3 rounded-lg bg-gray-50"
@@ -62,7 +80,7 @@ const UpdatePasswordScreen = () => {
               value={form.currentPassword}
               onChangeText={(text) => handleChange('currentPassword', text)}
             />
-          </View>
+          </View> */}
 
           {/* New Password */}
           <View className="mb-4">
