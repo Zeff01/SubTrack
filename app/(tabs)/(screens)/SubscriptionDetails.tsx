@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, TextInput, Image  } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, TextInput, Image, Modal   } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { FontAwesome } from '@expo/vector-icons';
 
@@ -8,6 +8,8 @@ import LoginScreen from '../../(screens)/Login';
 import { useAuth } from '../../providers/AuthProvider'; // Import your AuthProvider
 
 import { useRoute } from '@react-navigation/native';
+import { deleteDocumentSubscription } from '../../../services/userService';
+
 
 
 const SubscriptionDetailsScreen = () => {
@@ -22,6 +24,8 @@ const SubscriptionDetailsScreen = () => {
   const [cycle, setCycle] = useState('');
   const [remindMe, setRemindMe] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
+  const [modalVisible, setModalVisible] = useState(false);
+
   
 
   if (!user) {
@@ -63,6 +67,17 @@ const SubscriptionDetailsScreen = () => {
       const reminder = reminders.find(r => r.key === key);
       return reminder ? reminder.value : key;
     };
+
+  const handleDelete = async () => {
+    const response = await deleteDocumentSubscription(subscription.id); // Call your Firebase update method
+    setModalVisible(false); // close modal
+    (navigation as any).navigate('MainTabs', {
+          screen: 'Subscriptions',
+          params: {
+            screen: 'subscriptions',
+          },
+    });
+  };
 
 
    return (
@@ -135,14 +150,45 @@ const SubscriptionDetailsScreen = () => {
             </TouchableOpacity>
         </View>
 
-         <View className="flex flex-row justify-between items-center w-full">
+        <View className="flex flex-row justify-between items-center w-full mb-28">
             <TouchableOpacity 
                 className="bg-[#F2786F] rounded-lg p-3 mt-6 w-full"
                 // onPress={handleAddSubscription}
+                onPress={() => setModalVisible(true)}
             >
                 <Text className="text-white text-center text-xl font-bold">DELETE</Text>
             </TouchableOpacity>
         </View>
+
+        <Modal
+          transparent
+          visible={modalVisible}
+          animationType="fade"
+          onRequestClose={() => setModalVisible(false)}
+        >
+          <View className="flex-1 justify-center items-center bg-black/50">
+            <View className="bg-white rounded-xl w-[80%] p-6">
+              <Text className="text-lg font-semibold text-center mb-4">
+                Are you sure you want to delete this item?
+              </Text>
+              <View className="flex-row justify-between mt-4">
+                <TouchableOpacity
+                  className="flex-1 bg-gray-200 py-3 rounded-lg mr-2"
+                  onPress={() => setModalVisible(false)}
+                >
+                  <Text className="text-center text-gray-700 font-semibold">Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  className="flex-1 bg-[#F2786F] py-3 rounded-lg ml-2"
+                  onPress={handleDelete}
+                >
+                  <Text className="text-center text-white font-semibold">Delete</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+
       </View>
       </ScrollView>
     </View>

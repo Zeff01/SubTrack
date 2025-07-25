@@ -17,6 +17,7 @@ import { useRoute } from '@react-navigation/native';
 import ColorModal from '../../modals/SelectColorModal';
 import { useFocusEffect } from '@react-navigation/native';
 
+import { updateDocumentSubscription } from '../../../services/userService';
 
 
 const EditSubscriptionScreen = () => {
@@ -28,6 +29,7 @@ const EditSubscriptionScreen = () => {
   const [cycle, setCycle] = useState('');
   const [remindMe, setRemindMe] = useState('');
   const [show, setShow] = useState(false);
+  const [id, setID] = useState(0);
   const authContext = useAuth();
   const { user, authLoading } = authContext;
   const { subscription } = route.params as { subscription: any };
@@ -55,11 +57,9 @@ const EditSubscriptionScreen = () => {
       setCost(subscription.cost);
       setCycle(subscription.cycle);
       setRemindMe(subscription.remind_me);
-      // setRemindMe(getReminderLabel(subscription.remind_me));
-      console.log(getReminderLabel(subscription.remind_me))
       setDueDate(parsed);
-      setSelectedColor(subscription.selected_color)
-     // setDueDate(new Date(subscription.due_date));
+      setSelectedColor(subscription.selected_color);
+      setID(subscription.id);
     }
   }, [subscription]);
 
@@ -100,9 +100,16 @@ const EditSubscriptionScreen = () => {
       }
   
       try {
-        const user_info = { uid: userData?.uid, app_name: appName, cost: cost, due_date: dueDate.toLocaleDateString(), cycle: cycle, remind_me: remindMe, selected_color : selectedColor }; // shorthand for object properties
-       // const response = await createDocumentSubscription(user_info);
-        Alert.alert("Success", JSON.stringify(user_info, null, 2));
+        const subscription_data = { uid: userData?.uid, app_name: appName, cost: cost, due_date: dueDate.toLocaleDateString(), cycle: cycle, remind_me: remindMe, selected_color : selectedColor }; // shorthand for object properties
+        const response = await updateDocumentSubscription(id, subscription_data); // Call your Firebase update method
+        Alert.alert("Success", JSON.stringify(subscription_data, null, 2));
+        // (navigation as any).navigate('MainTabsSubscriptions', { screen: 'subscriptions' })
+        (navigation as any).navigate('MainTabs', {
+          screen: 'Subscriptions',
+          params: {
+            screen: 'subscriptions',
+          },
+        });
       //  reset();
       } catch (error) {
         Alert.alert("Error", "An error occurred while logging in.");
@@ -197,7 +204,7 @@ return (
               className="bg-[#3AABCC] rounded-lg p-3 mt-6"
               onPress={handleEditSubscription}
             >
-              <Text className="text-white text-center text-xl font-bold">Edit Subscription</Text>
+              <Text className="text-white text-center text-xl font-bold">Update Subscription</Text>
             </TouchableOpacity>
 
              <ColorModal

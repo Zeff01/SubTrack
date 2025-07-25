@@ -284,13 +284,13 @@ export const updateDocumentSubscription = async (docId, subscription_info) => {
     }
 
     await updateDoc(docRef, {
-      platform: subscription_info.platform,
-      cycle: subscription_info.cycle,
-      subscription_date: subscription_info.subscription_date,
+      app_name: subscription_info.app_name,
       cost: subscription_info.cost,
+      due_date: subscription_info.due_date,
+      cycle: subscription_info.cycle,
+      remind_me: subscription_info.remind_me,
+      selected_color: subscription_info.selected_color,
     });
-
-    //console.log("Document updated");
 
     return { 
         success: true,

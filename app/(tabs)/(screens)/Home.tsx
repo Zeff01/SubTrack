@@ -11,7 +11,9 @@ import { getUsernameByEmail } from "../../../services/userService";
 import { onAuthStateChanged  } from 'firebase/auth';
 import { auth } from "../../../config/firebase.js"; // Assuming db is not needed here
 
+import { User } from 'firebase/auth';
 
+import { useAuth } from '../../providers/AuthProvider'; // Import your AuthProvider
 
 const HomeScreen = () => {
   const navigation = useNavigation();
@@ -20,7 +22,22 @@ const HomeScreen = () => {
   const [active, setActive] = useState(false);
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
   const [username, setUsername] = useState<string | null>('');
+  const authContext = useAuth();
+  const { user, authLoading } = authContext;
+  const [userData, setUserData] =  useState<User | null>(null); // ✅ Allow User or null
+  
 
+  useFocusEffect(
+      useCallback(() => {
+          setUserData(user);
+      }, [authLoading, user])
+  );
+
+  useFocusEffect(
+      useCallback(() => {
+        getUsername(userData?.email as string);
+      }, [])
+  );
 
   const getUsername = async (email : string) => {
     try {
@@ -33,13 +50,7 @@ const HomeScreen = () => {
     }
   };
 
-    useFocusEffect(
-      useCallback(() => {
-        const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-          getUsername(firebaseUser?.email as string);
-        });  
-      }, [])
-    );
+
 
     const highlightedDays = [
       { day: 1, colors: ['#007bff'] },
