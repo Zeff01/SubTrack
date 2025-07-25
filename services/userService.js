@@ -225,14 +225,14 @@ export const createDocumentSubscription = async (subscription_info) => {
   try {
     const user = await addDoc(collection(db, "subscriptions"), {
       uid: subscription_info.uid,
-      platform: subscription_info.platform,
-      cycle: subscription_info.cycle,
-      subscription_date: subscription_info.subscription_date,
+      app_name: subscription_info.app_name,
       cost: subscription_info.cost,
+      due_date: subscription_info.due_date,
+      cycle: subscription_info.cycle,
+      remind_me: subscription_info.remind_me,
+      selected_color: subscription_info.selected_color,
       created_at: getCurrentDateTime()
     });
-
-    //console.log("Document written with ID: ", user.id);
 
     return { 
         success: true,

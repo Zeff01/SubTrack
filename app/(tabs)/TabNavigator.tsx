@@ -75,7 +75,18 @@ const TabNavigator = () => {
         }}
       /> */}
       
-      <Tab.Screen name="Subscriptions" component={SubscriptionStack} />
+      <Tab.Screen 
+        name="Subscriptions" 
+        component={SubscriptionStack} 
+        listeners={({ navigation }) => ({
+          tabPress: (e) => {
+            e.preventDefault(); // Prevent default behavior
+            navigation.navigate('Subscriptions', {
+              screen: 'subscriptions', // 👈 Navigate to this nested screen
+            });
+          },
+        })}
+      />
       <Tab.Screen name="Account" component={AccountStack} />
     </Tab.Navigator>
   );

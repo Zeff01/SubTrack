@@ -25,7 +25,6 @@ const HomeScreen = () => {
   const getUsername = async (email : string) => {
     try {
       const response =  await getUsernameByEmail(email);
-      setUsername(null);
       if (response.success) {
         setUsername(response.username);
       } 

@@ -1,19 +1,77 @@
-import React from 'react';
 import { View, Text, ScrollView, TouchableOpacity, TextInput } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { FontAwesome } from '@expo/vector-icons';
 
-import { useNavigation } from '@react-navigation/native';
+import React, { useState, useCallback } from 'react';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { onAuthStateChanged, User  } from 'firebase/auth';
+
+import { auth } from "../../../config/firebase.js"; // Assuming db is not needed here
+import { retrieveAllDocumentSubscriptionSpecificUser } from "../../../services/userService.js";
+
+type Subscription = {
+  id: string;
+  uid: string;
+  app_name: string;
+  cost: string;
+  cycle: string;
+  due_date: string;
+  remind_me: string;
+  selected_color: string;
+  created_at: string;
+};
 
 const SubscriptionScreen = () => {
   const navigation = useNavigation();
+  const [loading, setLoading] = useState(true);
+  const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
 
-  const subscriptions = [
-    { name: 'Netflix', price: '₱600', dueDate: 'Monthly, June 30, 2025' },
-    { name: 'Disney+', price: '₱800', dueDate: 'Due date: June 29, 2025' },
-    { name: 'Hulu', price: '₱400', dueDate: 'Monthly, June 30, 2025' },
-  ];
 
+  // const subscriptions = [
+  //   { name: 'Netflix', price: '₱600', dueDate: 'Monthly, June 30, 2025' },
+  //   { name: 'Disney+', price: '₱800', dueDate: 'Due date: June 29, 2025' },
+  //   { name: 'Hulu', price: '₱400', dueDate: 'Monthly, June 30, 2025' },
+  // ];
+
+    useFocusEffect(
+      useCallback(() => {
+        const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+          fetchSubscriptions(firebaseUser?.uid as string);
+        });
+      }, [])
+    );
+
+    const fetchSubscriptions = async (user_id: string) => {
+      try {
+        setLoading(true);
+        const res = await retrieveAllDocumentSubscriptionSpecificUser(user_id);
+        const data = res.data as Subscription[];
+        setSubscriptions(data);
+      } catch (error) {
+        console.error('Failed to fetch subscriptions:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    const formatDate = (dateString: string): string => {
+      const [month, day, year] = dateString.split('/').map(Number);
+
+      if (!month || !day || !year) return 'Invalid Date';
+
+      const parsedDate = new Date(year, month - 1, day); // month is 0-based
+
+      return parsedDate.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
+    };
+
+    const filteredSubscriptions = subscriptions.filter(sub =>
+      sub.app_name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
    return (
     <>
@@ -61,8 +119,10 @@ const SubscriptionScreen = () => {
               flex: 1, // Allow search bar to take available width
             }}>
             <FontAwesome name="search" size={20} color="black" style={{ padding: 10 }} />
-            <TextInput
+           <TextInput
               placeholder="Search..."
+              value={searchQuery}
+              onChangeText={setSearchQuery}
               style={{
                 flex: 1,
                 backgroundColor: 'transparent',
@@ -77,21 +137,34 @@ const SubscriptionScreen = () => {
         </View>
 
         <View className="mt-4">
-          {subscriptions.map((subscription, index) => (
+          {filteredSubscriptions.map((subscription, index) => (
             <TouchableOpacity key={index}  
               className="py-6 px-4 my-1 flex-row justify-between  items-center rounded-3xl shadow-xl bg-white"
               // onPress={() => (navigation as any).navigate('Subscriptions', { screen: 'subscription_details' })}
-              onPress={() => (navigation as any).navigate('SubscriptionDetails')}
+              onPress={() => (navigation as any).navigate('SubscriptionDetails', { subscription })}
             >
               <View className="flex justify-center items-center  min-h-16">
                 <View className="bg-gray-400 rounded-full h-10 w-10 shadow-xl" />
               </View>
-              <View className="min-h-16 flex justify-center  items-start">
-                <Text className="font-bold">{subscription.name}</Text>
-                <Text>{subscription.dueDate}</Text>
+              <View className="min-h-16 max-w-52 min-w-52 flex justify-center items-start">
+                <Text
+                  className="font-bold text-base"
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
+                >
+                  {subscription.app_name}
+                </Text>
+                <Text
+                  className="text-sm text-gray-600"
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
+                >
+                  {subscription.cycle.charAt(0).toUpperCase() + subscription.cycle.slice(1)}, {formatDate(subscription.due_date)}
+                </Text>
               </View>
+
               <View className="flex-row justify-between items-center min-h-16">
-                <Text>{subscription.price}</Text>
+                <Text>₱{subscription.cost}</Text>
                 <Ionicons name="chevron-forward" size={25} color="black" className="ml-2" />
               </View>
             </TouchableOpacity>

@@ -22,6 +22,13 @@ npm install @react-native-community/datetimepicker --save
 npm install moment
 npm install -g eas-cli
 eas build -p android --profile preview
+npm install react-native-color-picker
+npm install @react-native-community/slider
+npm install react-native-wheel-color-picker
+npm install react-native-heroicons
+
+
+
 
 
 

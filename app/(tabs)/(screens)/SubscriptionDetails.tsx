@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, TextInput, Image  } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { FontAwesome } from '@expo/vector-icons';
@@ -7,22 +7,62 @@ import { useNavigation } from '@react-navigation/native';
 import LoginScreen from '../../(screens)/Login';
 import { useAuth } from '../../providers/AuthProvider'; // Import your AuthProvider
 
+import { useRoute } from '@react-navigation/native';
+
 
 const SubscriptionDetailsScreen = () => {
   const navigation = useNavigation();
-  
+  const route = useRoute();
   const authContext = useAuth();
   const { user } = authContext;
+  const { subscription } = route.params as { subscription: any };
+  const [appName, setAppName] = useState('');
+  const [cost, setCost] = useState('');
+  const [dueDate, setDueDate] = useState<string>(new Date().toLocaleDateString());
+  const [cycle, setCycle] = useState('');
+  const [remindMe, setRemindMe] = useState('');
+  const [selectedColor, setSelectedColor] = useState('');
+  
 
   if (!user) {
     return <LoginScreen />;
   }
 
-  const subscriptions = [
-    { name: 'Netflix', price: '₱6001', dueDate: 'Monthly, June 30, 2025' },
-    { name: 'Disney+', price: '₱800', dueDate: 'Due date: June 29, 2025' },
-    { name: 'Hulu', price: '₱400', dueDate: 'Monthly, June 30, 2025' },
+  const reminders = [
+    { key: '1_day_before', value: '1 Day Before' },
+    { key: '3_day_before', value: '3 Day Before' },
+    { key: '1_week_before', value: '1 Week Before' },
   ];
+
+  useEffect(() => {
+      if (subscription) {
+        setAppName(subscription.app_name);
+        setCost(subscription.cost);
+        setCycle(subscription.cycle);
+        setRemindMe(subscription.remind_me || '');
+        setDueDate(subscription.due_date);
+        setSelectedColor(subscription.selected_color);
+      }
+  }, [subscription]);
+
+     const formatDate = (dateString: string): string => {
+      const [month, day, year] = dateString.split('/').map(Number);
+
+      if (!month || !day || !year) return 'Invalid Date';
+
+      const parsedDate = new Date(year, month - 1, day); // month is 0-based
+
+      return parsedDate.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
+    };
+
+    const getReminderLabel = (key: string) => {
+      const reminder = reminders.find(r => r.key === key);
+      return reminder ? reminder.value : key;
+    };
 
 
    return (
@@ -50,46 +90,45 @@ const SubscriptionDetailsScreen = () => {
           />
         </View>
 
-        <Text className="text-2xl font-bold">Netflix</Text>
+        <Text className="text-2xl font-bold">{appName}</Text>
         {/* <Text className="text-sm text-gray-500 mb-4">Price</Text> */}
         <View className="w-full border-b-2 border-gray-800 mb-5 mt-16" />
       
        <View className="flex flex-row justify-between items-center w-full">
           <Text className="text-sm text-gray-700">Cost per month</Text>
-          <Text className="text-lg font-medium">₱600</Text>
+          <Text className="text-lg font-medium">₱{cost}</Text>
         </View>
         <View className="w-full border-b-2 border-gray-800 mb-5 mt-4" />
 
 
        <View className="flex flex-row justify-between items-center w-full">
           <Text className="text-sm text-gray-700 mt-4">Due Date</Text>
-          <Text className="text-lg font-medium">July 1, 2025</Text>
+          <Text className="text-lg font-medium">{formatDate(dueDate)}</Text>
         </View>
         <View className="w-full border-b-2 border-gray-800 mb-5 mt-4" />
 
         <View className="flex flex-row justify-between items-center w-full">
           <Text className="text-sm text-gray-700 mt-4">Cycle</Text>
-          <Text className="text-lg font-medium">Monthly</Text>
+          <Text className="text-lg font-medium">{cycle.charAt(0).toUpperCase() + cycle.slice(1)}</Text>
         </View>
         <View className="w-full border-b-2 border-gray-800 mb-5 mt-4" />
-
-        <View className="flex flex-row justify-between items-center w-full">
-          <Text className="text-sm text-gray-700 mt-4">Payment Method</Text>
-          <Text className="text-lg font-medium">Gcash</Text>
-        </View>
-        <View className="w-full border-b-2 border-gray-800 mb-5 mt-4" />
-
 
         <View className="flex flex-row justify-between items-center w-full">
           <Text className="text-sm text-gray-700 mt-4">Remind me</Text>
-          <Text className="text-lg font-medium">5 days before</Text>
+          <Text className="text-lg font-medium">{getReminderLabel(remindMe)}</Text>
+        </View>
+        <View className="w-full border-b-2 border-gray-800 mb-3 mt-4" />
+
+        <View className="flex flex-row justify-between items-center w-full">
+          <Text className="text-sm text-gray-700  w-full py-4" style={{ backgroundColor: selectedColor}}></Text>
+          {/* <Text className="text-lg font-medium w-36"  >ads</Text> */}
         </View>
         <View className="w-full border-b-2 border-gray-800 mb-5 mt-4" />
 
         <View className="flex flex-row justify-between items-center w-full">
             <TouchableOpacity 
                 className="bg-[#71E0BB] rounded-lg p-3 mt-6 w-full"
-                onPress={() => (navigation as any).navigate('EditSubscription')}
+                onPress={() => (navigation as any).navigate('EditSubscription', {subscription})}
                 // onPress={() => (navigation as any).navigate('Subscriptions', { screen: 'edit_subscription' })}
             >
                 <Text className="text-white text-center text-xl font-bold">EDIT</Text>
