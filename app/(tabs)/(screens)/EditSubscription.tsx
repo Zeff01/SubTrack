@@ -8,6 +8,9 @@ import { SelectList } from 'react-native-dropdown-select-list'; // You may need 
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { useNavigation } from '@react-navigation/native';
 
+import LoginScreen from '../../(screens)/Login';
+import { useAuth } from '../../providers/AuthProvider'; // Import your AuthProvider
+
 const EditSubscriptionScreen = () => {
   const navigation = useNavigation();
   const [appName, setAppName] = useState('');
@@ -18,9 +21,12 @@ const EditSubscriptionScreen = () => {
   const [remindMe, setRemindMe] = useState('');
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [show, setShow] = useState(false);
+  const authContext = useAuth();
+  const { user } = authContext;
 
-
-  // Placeholder options for dropdowns
+  if (!user) {
+    return <LoginScreen />;
+  }
 
    const onChangeDate = (event: DateTimePickerEvent, date?: Date) => {
     if (event.type === 'set' && date) {

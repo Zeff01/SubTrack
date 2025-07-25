@@ -22,15 +22,13 @@ const HomeScreen = () => {
   const [username, setUsername] = useState<string | null>('');
 
 
-    const getUsername = async (email : string) => {
-
+  const getUsername = async (email : string) => {
     try {
       const response =  await getUsernameByEmail(email);
-
+      setUsername(null);
       if (response.success) {
         setUsername(response.username);
       } 
-      setUsername(null);
     } catch (error) {
       Alert.alert("Error", "An error occurred while logging in.");
     }

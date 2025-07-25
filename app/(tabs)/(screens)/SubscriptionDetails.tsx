@@ -4,9 +4,19 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import { FontAwesome } from '@expo/vector-icons';
 
 import { useNavigation } from '@react-navigation/native';
+import LoginScreen from '../../(screens)/Login';
+import { useAuth } from '../../providers/AuthProvider'; // Import your AuthProvider
+
 
 const SubscriptionDetailsScreen = () => {
   const navigation = useNavigation();
+  
+  const authContext = useAuth();
+  const { user } = authContext;
+
+  if (!user) {
+    return <LoginScreen />;
+  }
 
   const subscriptions = [
     { name: 'Netflix', price: '₱6001', dueDate: 'Monthly, June 30, 2025' },
