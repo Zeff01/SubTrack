@@ -221,6 +221,33 @@ export const retrieveAllDocumentUser = async () => {
   }
 };
 
+
+export const createDocumentNotification = async (notification_info) => {
+  try {
+    const notification = await addDoc(collection(db, "notifications"), {
+      title: notification_info.title,
+      message: notification_info.message,
+      date: notification_info.date,
+      is_read: notification_info.is_read,
+      id: notification_info.id,
+      uid: notification_info.uid,
+      created_at: getCurrentDateTime()
+    });
+
+    return { 
+        success: true,
+        message: 'Document successfully created.',
+        data: notification
+    };
+  } catch (error) {
+    return {
+        success: false,
+        error: error.message || "Failed due to a network or server error.",
+    };
+  }
+};
+
+
 export const createDocumentSubscription = async (subscription_info) => {
   try {
     const user = await addDoc(collection(db, "subscriptions"), {
