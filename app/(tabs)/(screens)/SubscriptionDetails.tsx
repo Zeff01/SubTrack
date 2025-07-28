@@ -8,8 +8,9 @@ import LoginScreen from '../../(screens)/Login';
 import { useAuth } from '../../providers/AuthProvider'; // Import your AuthProvider
 
 import { useRoute } from '@react-navigation/native';
-import { deleteDocumentSubscription } from '../../../services/userService';
+import { deleteDocumentSubscription, retrieveSpecificDocumentSubscriptionSpecificUser } from '../../../services/userService';
 import { cycles, reminders, payments, formatDueDate } from '../../modules/constants'; // Adjust path as needed
+import { User } from 'firebase/auth';
 
 
 
@@ -27,42 +28,43 @@ const SubscriptionDetailsScreen = () => {
   const [paymentStatus, setPaymentStatus] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
+  const [userData, setUserData] =  useState<User | null>(null); // ✅ Allow User or null
+  const [subscriptionData, setSubscriptionData] =  useState<any>(null); // ✅ Allow User or null
 
-  
 
   if (!user) {
     return <LoginScreen />;
   }
 
-
-
   useEffect(() => {
-      if (subscription) {
-        setAppName(subscription.app_name);
-        setCost(subscription.cost);
-        setCycle(subscription.cycle);
-        setRemindMe(subscription.remind_me || '');
-        setDueDate(subscription.due_date);
-        setSelectedColor(subscription.selected_color);
-        setPaymentStatus(subscription.payment_status);
+    setUserData(user);
+    fetchSubscription(userData?.uid as string);
+  }, [userData]);
+
+  const fetchSubscription = async (user_uid : string) => {
+      const response = await retrieveSpecificDocumentSubscriptionSpecificUser(user_uid, subscription.id); // Call your Firebase update method
+    
+      if (response?.data && response.data.length > 0) {
+        setSubscriptionData(response.data[0]);
       }
-  }, [subscription]);
+  };
 
  
-    const getPaymentLabel = (key: string) => {
+  const getPaymentLabel = (key: string) => {
       const payment = payments.find(r => r.key === key);
       return payment ? payment.value : key;
-    };
+  };
 
-    const getCycleLabel = (key: string) => {
+  const getCycleLabel = (key: string) => {
       const cycle = cycles.find(r => r.key === key);
       return cycle ? cycle.value : key;
-    };
+  };
 
-    const getReminderLabel = (key: string) => {
+  const getReminderLabel = (key: string) => {
       const reminder = reminders.find(r => r.key === key);
       return reminder ? reminder.value : key;
-    };
+  };
+
 
   const handleDelete = async () => {
     const response = await deleteDocumentSubscription(subscription.id); // Call your Firebase update method
@@ -101,44 +103,45 @@ const SubscriptionDetailsScreen = () => {
           />
         </View>
 
-        <Text className="text-2xl font-bold">{appName}</Text>
+        <Text className="text-2xl font-bold">{subscriptionData?.app_name}</Text>
         {/* <Text className="text-sm text-gray-500 mb-4">Price</Text> */}
         <View className="w-full border-b-2 border-gray-800 mb-5 mt-16" />
       
        <View className="flex flex-row justify-between items-center w-full">
           <Text className="text-sm text-gray-700">Cost per month</Text>
-          <Text className="text-lg font-medium">₱{cost}</Text>
+          <Text className="text-lg font-medium">₱{subscriptionData?.cost}</Text>
         </View>
         <View className="w-full border-b-2 border-gray-800 mb-5 mt-4" />
 
 
        <View className="flex flex-row justify-between items-center w-full">
           <Text className="text-sm text-gray-700 mt-4">Due Date</Text>
-          <Text className="text-lg font-medium">{formatDueDate(dueDate)}</Text>
+          <Text className="text-lg font-medium">{subscriptionData?.due_date}</Text>
+          {/* <Text className="text-lg font-medium">{formatDueDate(subscriptionData?.due_date)}</Text> */}
         </View>
         <View className="w-full border-b-2 border-gray-800 mb-5 mt-4" />
 
         <View className="flex flex-row justify-between items-center w-full">
           <Text className="text-sm text-gray-700 mt-4">Cycle</Text>
-          <Text className="text-lg font-medium">{getCycleLabel(cycle)}</Text>
+          <Text className="text-lg font-medium">{getCycleLabel(subscriptionData?.cycle)}</Text>
           {/* <Text className="text-lg font-medium">{cycle.charAt(0).toUpperCase() + cycle.slice(1)}</Text> */}
         </View>
         <View className="w-full border-b-2 border-gray-800 mb-5 mt-4" />
 
         <View className="flex flex-row justify-between items-center w-full">
           <Text className="text-sm text-gray-700 mt-4">Remind me</Text>
-          <Text className="text-lg font-medium">{getReminderLabel(remindMe)}</Text>
+          <Text className="text-lg font-medium">{getReminderLabel(subscriptionData?.remind_me)}</Text>
         </View>
         <View className="w-full border-b-2 border-gray-800 mb-3 mt-4" />
 
          <View className="flex flex-row justify-between items-center w-full">
           <Text className="text-sm text-gray-700 mt-4">Payment Status</Text>
-          <Text className="text-lg font-medium">{getPaymentLabel(paymentStatus)}</Text>
+          <Text className="text-lg font-medium">{getPaymentLabel(subscriptionData?.payment_status)}</Text>
         </View>
         <View className="w-full border-b-2 border-gray-800 mb-3 mt-4" />
 
         <View className="flex flex-row justify-between items-center w-full">
-          <Text className="text-sm text-gray-700  w-full py-4" style={{ backgroundColor: selectedColor}}></Text>
+          <Text className="text-sm text-gray-700  w-full py-4" style={{ backgroundColor: subscriptionData?.selected_color}}></Text>
           {/* <Text className="text-lg font-medium w-36"  >ads</Text> */}
         </View>
         <View className="w-full border-b-2 border-gray-800 mb-5 mt-4" />
@@ -146,7 +149,7 @@ const SubscriptionDetailsScreen = () => {
         <View className="flex flex-row justify-between items-center w-full">
             <TouchableOpacity 
                 className="bg-[#71E0BB] rounded-lg p-3 mt-6 w-full"
-                onPress={() => (navigation as any).navigate('EditSubscription', {subscription})}
+                onPress={() => (navigation as any).navigate('EditSubscription', {subscription : subscriptionData})}
                 // onPress={() => (navigation as any).navigate('Subscriptions', { screen: 'edit_subscription' })}
             >
                 <Text className="text-white text-center text-xl font-bold">EDIT</Text>

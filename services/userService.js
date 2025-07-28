@@ -72,42 +72,42 @@ export const checkIfUsernameExists = async (username) => {
       error: error.message || "Failed due to a network or server error.",
     };
   }
+
+
 };
 
 
-
-
-export const retrieveAllDocumentSubscriptionMonthlySpecificUser = async (user_id, date_info) => {
+export const retrieveSpecificDocumentSubscriptionSpecificUser = async (user_id, sub_id) => {
   try {
-    const subscriptionsCol = collection(db, "subscriptions");
-    const q = firestore_query(subscriptionsCol, where("uid", "==", user_id));
-    const subscriptionsSnapshot = await getDocs(q);
+    const docRef = doc(db, "subscriptions", sub_id); // sub_id is document ID
+    const docSnap = await getDoc(docRef);
 
-    const data = [];
-
-    if (subscriptionsSnapshot.empty) {
+    if (!docSnap.exists()) {
       return {
         success: false,
-        message: "No subscriptions found.",
+        message: "Subscription not found.",
         data: [],
       };
     }
 
-    subscriptionsSnapshot.forEach(doc => {
-      const sub = doc.data();
-      const [month, , year] = sub.subscription_date.split('/').map(Number);
+    const docData = docSnap.data();
 
-      if (month === date_info.month && year === date_info.year) {
-        data.push({ id: doc.id, ...sub });
-      }
-    });
+    // Check if the user_id matches
+    if (docData.uid !== user_id) {
+      return {
+        success: false,
+        message: "Subscription does not belong to this user.",
+        data: [],
+      };
+    }
 
     return {
       success: true,
-      message: "All documents successfully retrieved.",
-      data: data,
+      message: "Subscription document retrieved successfully.",
+      data: [{ id: docSnap.id, ...docData }],
     };
   } catch (error) {
+    console.error("Error retrieving subscription:", error);
     return {
       success: false,
       error: error.message || "Failed due to a network or server error.",
@@ -397,8 +397,6 @@ export const deleteDocumentSubscription = async (docId) => {
     }
     await deleteDoc(docRef);
 
-   // console.log("Document deleted");
-
     return { 
         success: true,
         message: 'Document successfully deleted.',
@@ -427,8 +425,6 @@ export const deleteDocumentUser = async (docId) => {
     }
     await deleteDoc(docRef);
 
-    //console.log("Document deleted");
-
     return { 
         success: true,
         message: 'Document successfully deleted.',
@@ -443,6 +439,8 @@ export const deleteDocumentUser = async (docId) => {
 };
 
 (async () => {
+
+  await retrieveSpecificDocumentSubscriptionSpecificUser("B463Tmk1WSSo2TyJm29ZH5c2MDg2", "bvKdVFEQ2sQuMrKBRY9i");
   // const date_info = {
   //   month: 6,
   //   year: 2025,

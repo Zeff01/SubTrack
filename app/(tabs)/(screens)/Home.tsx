@@ -294,7 +294,10 @@ function formatEntryDate(dateStr: string): string {
             <Text className="text-xl font-semibold text-gray-800">Hello, {username}!</Text>
           </View>
           <View className="flex-row">
-            <TouchableOpacity className="mr-2">
+            <TouchableOpacity 
+              className="mr-2"
+              onPress={() => (navigation as any).navigate('Home', { screen: 'notification' })}
+            >
               <Text className="text-gray-600">🔔</Text>
             </TouchableOpacity>
             <TouchableOpacity>

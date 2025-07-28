@@ -62,7 +62,18 @@ const TabNavigator = () => {
         },
       })}
     >
-      <Tab.Screen name="Home" component={HomeStack} />
+      <Tab.Screen 
+      name="Home" 
+      component={HomeStack}
+      listeners={({ navigation }) => ({
+          tabPress: (e) => {
+            e.preventDefault(); // Prevent default behavior
+            navigation.navigate('Home', {
+              screen: 'home', // 👈 Navigate to this nested screen
+            });
+          },
+        })}
+      />
        {/* <Tab.Screen name="Calendar" component={Calendar} /> */}
       {/*<Tab.Screen
         name="Plus"
