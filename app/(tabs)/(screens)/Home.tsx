@@ -23,6 +23,8 @@ import { Subscription } from '../../../types/SubscriptionType';
 const HomeScreen = () => {
   const navigation = useNavigation();
   const [currentDate, setCurrentDate] = useState(moment());
+  const [currentDateMonth] = useState(moment());
+
  // const [currentDay, setCurrentDay] = useState(moment());
   const [active, setActive] = useState(false);
   //const [selectedDay, setSelectedDay] = useState<number | null>(null);
@@ -307,7 +309,7 @@ function formatEntryDate(dateStr: string): string {
         <View className="mt-4">
           <Text className="text-gray-700 text-xl font-bold">Total Monthly Payment</Text>
           <View className="flex-row items-center mt-4 bg-blue-400 rounded-3xl p-5">
-            <Text className="text-2xl font-bold flex-1 text-gray-800">June 2025</Text>
+            <Text className="text-2xl font-bold flex-1 text-gray-800">{currentDateMonth.format('MMMM YYYY')}</Text>
             <TouchableOpacity className="ml-2 p-2 flex-row items-center">
               <Text className="text-white text-center font-semibold">₱{monthlyCost.toFixed(2)}</Text>
               <Ionicons name="chevron-forward" size={25} color="white" className="ml-2" />
