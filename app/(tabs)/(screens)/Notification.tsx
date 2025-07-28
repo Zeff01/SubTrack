@@ -5,19 +5,8 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import { User } from 'firebase/auth'; // 👈 Ensure this is imported
 import { useAuth } from '../../providers/AuthProvider';
 
-type Notification = {
-  id: string;
-  notif_id: string;
-  title: string;
-  message: string;
-  date: string;
-  uid: string;
-  is_read: number;
-};
-
-   
-
-const mockNotifications: Notification[] = [
+  
+const mockNotifications: any[] = [
   {
     id: 'GBaJJA6rR0HnaBeBF3k6',
     notif_id: '123',
@@ -67,26 +56,25 @@ const mockNotifications: Notification[] = [
 
 const NotificationScreen = () => {
   const navigation = useNavigation();
-  const { user, authLoading } = useAuth();
-  const [filteredNotifications, setFilteredNotifications] = useState<Notification[]>([]);
+  const { user } = useAuth();
+  const [filteredNotifications, setFilteredNotifications] = useState<any[]>([]);
 
-useFocusEffect(
-  useCallback(() => {
-    if (!authLoading && user && (user as User).uid) {
-      const currentUser = user as User;
-      const userNotifications = mockNotifications.filter(
-        (notif) => notif.uid === currentUser.uid
-      );
-      console.log(userNotifications)
-      setFilteredNotifications(userNotifications);
-    }
-  }, [authLoading, user])
-);
+  useFocusEffect(
+    useCallback(() => {
+      if (user) {
+        const currentUser = user as User;
+        const userNotifications = mockNotifications.filter(
+          (notif) => notif.uid === currentUser.uid
+        );
+        setFilteredNotifications(userNotifications);
+      }
+    }, [user])
+  );
 
 
   return (
     <>
-      {/* Header */}
+      <View className="flex-1 bg-white">
       <View className="pt-12 pb-6 px-6 bg-[#D9D9D9] rounded-b-3xl">
         <View className="relative items-center justify-center">
           <TouchableOpacity
@@ -107,26 +95,31 @@ useFocusEffect(
               <Text className="text-gray-500 text-lg">No notifications found</Text>
             </View>
           ) : (
-            filteredNotifications.map((notif) => (
-              <TouchableOpacity
-                key={notif.id}
-                className="mb-3 p-4 rounded-2xl shadow bg-white"
-                onPress={() =>
-                  (navigation as any).navigate('SubscriptionDetails', { subscription: notif })
-                }
-              >
-                <View className="flex-row justify-between items-center mb-1">
-                  <Text className="text-base font-semibold text-gray-800">
-                    {notif.title}
-                  </Text>
-                  <Text className="text-xs text-gray-500">{notif.date}</Text>
-                </View>
-                <Text className="text-sm text-gray-600">{notif.message}</Text>
-              </TouchableOpacity>
-            ))
+            <>
+              {filteredNotifications.map((notif) => (
+                <TouchableOpacity
+                  key={notif.id}
+                  className={`mb-3 p-4 rounded-2xl shadow ${
+                    notif.is_read === 0 ? 'bg-blue-100' : 'bg-white'
+                  }`}
+                  onPress={() =>
+                    (navigation as any).navigate('SubscriptionDetails', { subscription: notif })
+                  }
+                >
+                  <View className="flex-row justify-between items-center mb-1">
+                    <Text className="text-base font-semibold text-gray-800">
+                      {notif.title}
+                    </Text>
+                    <Text className="text-xs text-gray-500">{notif.date}</Text>
+                  </View>
+                  <Text className="text-sm text-gray-600">{notif.message}</Text>
+                </TouchableOpacity>
+              ))}
+            </>
           )}
         </ScrollView>
       </View>
+         </View>
     </>
   );
 };

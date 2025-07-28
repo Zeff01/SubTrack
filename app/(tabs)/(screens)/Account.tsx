@@ -22,9 +22,9 @@ const AccountSettingsScreen = () => {
    const handleLogout = async () => {
     try {
      // router.replace("/(screens)/welcome");
+      await signOut(auth);
       (navigation as any).navigate('Login')
       Alert.alert("Logged out", "You have been signed out.");
-      await signOut(auth);
     } catch (error) {
       Alert.alert("Error", "Failed to logout. Please try again.");
       console.error("Logout error:", error);

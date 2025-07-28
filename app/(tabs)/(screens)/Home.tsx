@@ -82,7 +82,7 @@ const HomeScreen = () => {
               setMonthlyCost(getTotalMonthlyCost(highlights));
             }
         } catch (error) {
-          console.error('Failed to fetch subscriptions:', error);
+         // console.log('Failed to fetch subscriptions:', error);
         } 
       };
 
