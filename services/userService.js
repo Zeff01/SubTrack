@@ -54,6 +54,7 @@ export const pushNotification = async () => {
 
     result.data.forEach((item) => {
       const [dueYear, dueMonth, dueDayStr] = item.due_date.split("-");
+      const reminder = item.remind_me.split("_")[0];
       const dueDay = parseInt(dueDayStr);
 
       if (dueDay === day) {
@@ -61,10 +62,10 @@ export const pushNotification = async () => {
           "Due Today!",
           `Your ${item.app_name}'s due date is today!`
         );
-      } else if (dueDay - day === 3) {
+      } else if (dueDay - day === reminder) {
         sendLocalNotification(
           "Upcoming Due Date",
-          `Reminder: Your ${item.app_name}'s due date is in 3 days.`
+          `Reminder: Your ${item.app_name}'s due date is in ${reminder} days.`
         );
       }
     });
