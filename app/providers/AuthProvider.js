@@ -1,11 +1,8 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { onAuthStateChanged } from 'firebase/auth';
-import { auth } from '../../config/firebase.js'; // adjust path
-
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "../../config/firebase.js"; // adjust path
 
 const AuthContext = createContext(null);
-
-
 
 const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);

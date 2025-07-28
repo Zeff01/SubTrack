@@ -16,6 +16,7 @@ npm install @react-navigation/native-stack
 npm install react-native-vector-icons
 npm install --save-dev @types/react-native-vector-icons
 npm install expo-linear-gradient
+npm install expo-notifications
 npm install react-native-dropdown-select-list
 npm install react-native-date-picker
 npm install @react-native-community/datetimepicker --save
