@@ -86,6 +86,8 @@ const EditSubscriptionScreen = () => {
 
   const defaultReminder = reminders.find(item => item.key === remindMe);
   const defaultCycle = cycles.find(item => item.key === cycle);
+  const defaultPayment = payments.find(item => item.key === paymentStatus);
+
 
 
   const handleEditSubscription = async () => {
@@ -184,7 +186,13 @@ return (
 
             <View>
                 <Text className="text-sm mb-1 mt-4">Payment Status</Text>
-                <SelectList setSelected={setPaymentStatus} data={payments} placeholder="Select Payment Status" />
+                <SelectList 
+                setSelected={setPaymentStatus} 
+                data={payments}
+                placeholder="Select Payment Status"
+                save="key" // Ensures it saves the key, not value
+                defaultOption={defaultPayment}
+                 />
             </View>
 
             <View>
