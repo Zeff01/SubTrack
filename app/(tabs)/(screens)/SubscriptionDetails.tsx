@@ -9,6 +9,7 @@ import { useAuth } from '../../providers/AuthProvider'; // Import your AuthProvi
 
 import { useRoute } from '@react-navigation/native';
 import { deleteDocumentSubscription } from '../../../services/userService';
+import { cycles, reminders, payments, formatDueDate } from '../../modules/constants'; // Adjust path as needed
 
 
 
@@ -23,6 +24,7 @@ const SubscriptionDetailsScreen = () => {
   const [dueDate, setDueDate] = useState<string>(new Date().toLocaleDateString());
   const [cycle, setCycle] = useState('');
   const [remindMe, setRemindMe] = useState('');
+  const [paymentStatus, setPaymentStatus] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
 
@@ -32,11 +34,7 @@ const SubscriptionDetailsScreen = () => {
     return <LoginScreen />;
   }
 
-  const reminders = [
-    { key: '1_day_before', value: '1 Day Before' },
-    { key: '3_day_before', value: '3 Day Before' },
-    { key: '1_week_before', value: '1 Week Before' },
-  ];
+
 
   useEffect(() => {
       if (subscription) {
@@ -46,21 +44,19 @@ const SubscriptionDetailsScreen = () => {
         setRemindMe(subscription.remind_me || '');
         setDueDate(subscription.due_date);
         setSelectedColor(subscription.selected_color);
+        setPaymentStatus(subscription.payment_status);
       }
   }, [subscription]);
 
-     const formatDate = (dateString: string): string => {
-      const [month, day, year] = dateString.split('/').map(Number);
+ 
+    const getPaymentLabel = (key: string) => {
+      const payment = payments.find(r => r.key === key);
+      return payment ? payment.value : key;
+    };
 
-      if (!month || !day || !year) return 'Invalid Date';
-
-      const parsedDate = new Date(year, month - 1, day); // month is 0-based
-
-      return parsedDate.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      });
+    const getCycleLabel = (key: string) => {
+      const cycle = cycles.find(r => r.key === key);
+      return cycle ? cycle.value : key;
     };
 
     const getReminderLabel = (key: string) => {
@@ -118,19 +114,26 @@ const SubscriptionDetailsScreen = () => {
 
        <View className="flex flex-row justify-between items-center w-full">
           <Text className="text-sm text-gray-700 mt-4">Due Date</Text>
-          <Text className="text-lg font-medium">{formatDate(dueDate)}</Text>
+          <Text className="text-lg font-medium">{formatDueDate(dueDate)}</Text>
         </View>
         <View className="w-full border-b-2 border-gray-800 mb-5 mt-4" />
 
         <View className="flex flex-row justify-between items-center w-full">
           <Text className="text-sm text-gray-700 mt-4">Cycle</Text>
-          <Text className="text-lg font-medium">{cycle.charAt(0).toUpperCase() + cycle.slice(1)}</Text>
+          <Text className="text-lg font-medium">{getCycleLabel(cycle)}</Text>
+          {/* <Text className="text-lg font-medium">{cycle.charAt(0).toUpperCase() + cycle.slice(1)}</Text> */}
         </View>
         <View className="w-full border-b-2 border-gray-800 mb-5 mt-4" />
 
         <View className="flex flex-row justify-between items-center w-full">
           <Text className="text-sm text-gray-700 mt-4">Remind me</Text>
           <Text className="text-lg font-medium">{getReminderLabel(remindMe)}</Text>
+        </View>
+        <View className="w-full border-b-2 border-gray-800 mb-3 mt-4" />
+
+         <View className="flex flex-row justify-between items-center w-full">
+          <Text className="text-sm text-gray-700 mt-4">Payment Status</Text>
+          <Text className="text-lg font-medium">{getPaymentLabel(paymentStatus)}</Text>
         </View>
         <View className="w-full border-b-2 border-gray-800 mb-3 mt-4" />
 

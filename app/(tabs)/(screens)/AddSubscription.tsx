@@ -12,7 +12,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import ColorModal from '../../modals/SelectColorModal';
 import { useAuth } from '../../providers/AuthProvider';
 
-import { cycles, reminders } from '../../modules/constants'; // Adjust path as needed
+import { cycles, reminders, payments } from '../../modules/constants'; // Adjust path as needed
 
 const AddSubscriptionScreen = () => {
   const navigation = useNavigation();
@@ -21,6 +21,7 @@ const AddSubscriptionScreen = () => {
   const [dueDate, setDueDate] = useState(new Date());
   const [cycle, setCycle] = useState('');
   const [remindMe, setRemindMe] = useState('');
+  const [paymentStatus, setPaymentStatus] = useState('');
   const [show, setShow] = useState(false);
   const [userData, setUserData] =  useState<User | null>(null); // ✅ Allow User or null
   const [selectedColor, setSelectedColor] = useState('#7FB3FF');
@@ -48,16 +49,17 @@ const AddSubscriptionScreen = () => {
       setSelectedColor('#7FB3FF');
       // setCycle('');
       // setRemindMe('');
+      // setPaymentStatus('');
   }
 
   const handleAddSubscription = async () => {
-      if (appName === "" || cost === ""  || dueDate.toLocaleDateString() === "" || cycle === ""  || remindMe === "" || selectedColor === "") {
+      if (appName === "" || cost === ""  || dueDate.toLocaleDateString() === "" || cycle === ""  || remindMe === "" || paymentStatus === "" || selectedColor === "") {
         Alert.alert("Validation", "Please fill in all fields");
         return;
       }
   
       try {
-        const user_info = { uid: userData?.uid, app_name: appName, cost: cost, due_date: dueDate.toLocaleDateString(), cycle: cycle, remind_me: remindMe, selected_color : selectedColor }; // shorthand for object properties
+        const user_info = { uid: userData?.uid, app_name: appName, cost: cost, due_date: dueDate.toLocaleDateString(), cycle: cycle, remind_me: remindMe, payment_status : paymentStatus, selected_color : selectedColor }; // shorthand for object properties
         const response = await createDocumentSubscription(user_info);
         Alert.alert("Success", JSON.stringify(user_info, null, 2));
         reset();
@@ -133,6 +135,10 @@ return (
               <SelectList setSelected={setRemindMe} data={reminders} placeholder="Select Reminder" />
             </View>
 
+            <View>
+              <Text className="text-sm mb-1 mt-4">Payment Status</Text>
+              <SelectList setSelected={setPaymentStatus} data={payments} placeholder="Select Payment Status" />
+            </View>
   
            {/* <View className="h-96">
             <ColorPicker

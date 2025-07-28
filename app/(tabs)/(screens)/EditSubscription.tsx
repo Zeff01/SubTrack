@@ -19,7 +19,7 @@ import ColorModal from '../../modals/SelectColorModal';
 import { useFocusEffect } from '@react-navigation/native';
 
 import { updateDocumentSubscription } from '../../../services/userService';
-import { cycles, reminders } from '../../modules/constants'; // Adjust path as needed
+import { cycles, reminders, payments } from '../../modules/constants'; // Adjust path as needed
 
 
 const EditSubscriptionScreen = () => {
@@ -27,7 +27,7 @@ const EditSubscriptionScreen = () => {
   const navigation = useNavigation();
   const [appName, setAppName] = useState('');
   const [cost, setCost] = useState('');
-  const [dueDate, setDueDate] =  useState(new Date());
+  const [dueDate, setDueDate] = useState<Date | null>(null);
   const [cycle, setCycle] = useState('');
   const [remindMe, setRemindMe] = useState('');
   const [show, setShow] = useState(false);
@@ -38,6 +38,7 @@ const EditSubscriptionScreen = () => {
   const [showModal, setShowModal] = useState(false);
   const [selectedColor, setSelectedColor] = useState('#7FB3FF');
   const [userData, setUserData] =  useState<User | null>(null); // ✅ Allow User or null
+  const [paymentStatus, setPaymentStatus] = useState('');
   
   
   useFocusEffect(
@@ -52,18 +53,27 @@ const EditSubscriptionScreen = () => {
 
   useEffect(() => {
     if (subscription) {
-      const [month, day, year] = subscription.due_date.split('/').map(Number);
-      const parsed = new Date(year, month - 1, day); // JS months are 0-based
-
       setAppName(subscription.app_name);
       setCost(subscription.cost);
       setCycle(subscription.cycle);
       setRemindMe(subscription.remind_me);
-      setDueDate(parsed);
+      setDueDate(convertToUSDateFormat(subscription.due_date));
       setSelectedColor(subscription.selected_color);
       setID(subscription.id);
+      setPaymentStatus(subscription.payment_status);
     }
   }, [subscription]);
+
+  function convertToUSDateFormat(dateStr: string): Date {
+    const [month, day, year] = dateStr.split('/');
+    const dayNum = parseInt(day, 10);
+    const monthNum = parseInt(month, 10);
+    const yearNum = parseInt(year, 10);
+
+    // Create and return a Date object
+    return new Date(yearNum, monthNum - 1, dayNum); // month is 0-based
+  }
+
 
    const onChangeDate = (event: DateTimePickerEvent, date?: Date) => {
     if (event.type === 'set' && date) {
@@ -79,13 +89,13 @@ const EditSubscriptionScreen = () => {
 
 
   const handleEditSubscription = async () => {
-      if (appName === "" || cost === ""  || dueDate.toLocaleDateString() === "" || cycle === ""  || remindMe === "" || selectedColor === "") {
+      if (appName === "" || cost === ""  || dueDate?.toLocaleDateString() === "" || cycle === ""  || remindMe === "" || paymentStatus === "" || selectedColor === "") {
         Alert.alert("Validation", "Please fill in all fields");
         return;
       }
   
       try {
-        const subscription_data = { uid: userData?.uid, app_name: appName, cost: cost, due_date: dueDate.toLocaleDateString(), cycle: cycle, remind_me: remindMe, selected_color : selectedColor }; // shorthand for object properties
+        const subscription_data = { uid: userData?.uid, app_name: appName, cost: cost, due_date: dueDate?.toLocaleDateString(), cycle: cycle, remind_me: remindMe, payment_status: paymentStatus, selected_color : selectedColor }; // shorthand for object properties
         const response = await updateDocumentSubscription(id, subscription_data); // Call your Firebase update method
         Alert.alert("Success", JSON.stringify(subscription_data, null, 2));
         // (navigation as any).navigate('MainTabsSubscriptions', { screen: 'subscriptions' })
@@ -145,7 +155,7 @@ return (
                 <TouchableOpacity onPress={() => setShow(true)} 
                   className="border border-gray-600 rounded-xl p-4" 
                 >
-                  <Text className="text-black">{dueDate.toLocaleDateString()}</Text>
+                  <Text className="text-black">{dueDate?.toLocaleDateString()}</Text>
                 </TouchableOpacity>
             </View>
 
@@ -172,7 +182,11 @@ return (
               />
             </View>
 
-            
+            <View>
+                <Text className="text-sm mb-1 mt-4">Payment Status</Text>
+                <SelectList setSelected={setPaymentStatus} data={payments} placeholder="Select Payment Status" />
+            </View>
+
             <View>
               <Pressable
                 onPress={() => setShowModal(true)}
@@ -200,7 +214,7 @@ return (
 
              {show && (
                 <DateTimePicker
-                  value={dueDate}
+                  value={dueDate!}
                   mode="date"
                   display="default"
                   onChange={onChangeDate}

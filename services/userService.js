@@ -231,6 +231,7 @@ export const createDocumentSubscription = async (subscription_info) => {
       cycle: subscription_info.cycle,
       remind_me: subscription_info.remind_me,
       selected_color: subscription_info.selected_color,
+      payment_status: subscription_info.payment_status,
       created_at: getCurrentDateTime()
     });
 
@@ -289,6 +290,7 @@ export const updateDocumentSubscription = async (docId, subscription_info) => {
       due_date: subscription_info.due_date,
       cycle: subscription_info.cycle,
       remind_me: subscription_info.remind_me,
+      payment_status: subscription_info.payment_status,
       selected_color: subscription_info.selected_color,
     });
 

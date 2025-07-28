@@ -9,6 +9,9 @@ import { onAuthStateChanged, User  } from 'firebase/auth';
 import { auth } from "../../../config/firebase.js"; // Assuming db is not needed here
 import { retrieveAllDocumentSubscriptionSpecificUser } from "../../../services/userService.js";
 
+import { formatDueDate } from '../../modules/constants';
+
+
 type Subscription = {
   id: string;
   uid: string;
@@ -27,12 +30,6 @@ const SubscriptionScreen = () => {
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
 
-
-  // const subscriptions = [
-  //   { name: 'Netflix', price: '₱600', dueDate: 'Monthly, June 30, 2025' },
-  //   { name: 'Disney+', price: '₱800', dueDate: 'Due date: June 29, 2025' },
-  //   { name: 'Hulu', price: '₱400', dueDate: 'Monthly, June 30, 2025' },
-  // ];
 
     useFocusEffect(
       useCallback(() => {
@@ -55,19 +52,26 @@ const SubscriptionScreen = () => {
       }
     };
     
-    const formatDate = (dateString: string): string => {
-      const [month, day, year] = dateString.split('/').map(Number);
+    function formatDueDate2(dateStr: string): string {
+      // Split the input "DD/MM/YYYY" into parts
+      const [day, month, year] = dateStr.split('/');
 
-      if (!month || !day || !year) return 'Invalid Date';
+      // Convert to numbers
+      const dayNum = parseInt(day, 10);
+      const monthNum = parseInt(month, 10);
+      const yearNum = parseInt(year, 10);
 
-      const parsedDate = new Date(year, month - 1, day); // month is 0-based
+      // Create a Date object (Note: month is 0-based in JS)
+      const dateObj = new Date(yearNum, monthNum - 1, dayNum);
 
-      return parsedDate.toLocaleDateString('en-US', {
+      // Format the date to "Month DD, YYYY"
+      return dateObj.toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'long',
         day: 'numeric',
       });
-    };
+    }
+
 
     const filteredSubscriptions = subscriptions.filter(sub =>
       sub.app_name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -151,7 +155,7 @@ const SubscriptionScreen = () => {
                 }
               >
                 <View className="flex justify-center items-center min-h-16">
-                  <View className="bg-gray-400 rounded-full h-10 w-10 shadow-xl" />
+                  <View className="bg-gray-400 rounded-full h-16 w-16 shadow-xl" />
                 </View>
                 <View className="min-h-16 max-w-52 min-w-52 flex justify-center items-start">
                   <Text
@@ -166,7 +170,7 @@ const SubscriptionScreen = () => {
                     numberOfLines={1}
                     ellipsizeMode="tail"
                   >
-                    {subscription.cycle.charAt(0).toUpperCase() + subscription.cycle.slice(1)}, {formatDate(subscription.due_date)}
+                    {subscription.cycle.charAt(0).toUpperCase() + subscription.cycle.slice(1)}, {formatDueDate(subscription.due_date)} 
                   </Text>
                 </View>
 
