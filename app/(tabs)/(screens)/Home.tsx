@@ -300,7 +300,9 @@ function formatEntryDate(dateStr: string): string {
             >
               <Text className="text-gray-600">🔔</Text>
             </TouchableOpacity>
-            <TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => (navigation as any).navigate('Account', { screen: 'account_settings' })}
+            >
               <Text className="text-gray-600">⚙️</Text>
             </TouchableOpacity>
           </View>

@@ -117,6 +117,44 @@ export const retrieveSpecificDocumentSubscriptionSpecificUser = async (user_id, 
 
 
 
+
+export const retrieveAllDocumentNotificationSpecificUser = async (user_id) => {
+  try {
+    const notificationsCol = collection(db, "notifications");
+    const q = firestore_query(notificationsCol, where("uid", "==", user_id));
+    const notificationsSnapshot = await getDocs(q);
+
+    const data = [];
+
+    if (notificationsSnapshot.empty) {
+      return {
+        success: false,
+        message: "No notifications found.",
+        data: [],
+      };
+    }
+
+    notificationsSnapshot.forEach((doc) => {
+      data.push({
+        notif_id: doc.id,
+        ...doc.data(),
+      });
+    });
+
+    return {
+      success: true,
+      message: "All documents successfully retrieved.",
+      data: data,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error.message || "Failed due to a network or server error.",
+    };
+  }
+};
+
+
 export const retrieveAllDocumentSubscriptionSpecificUser = async (user_id) => {
   try {
     const subscriptionsCol = collection(db, "subscriptions");
