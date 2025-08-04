@@ -1,6 +1,15 @@
-import { addDoc, collection, deleteDoc, doc, getDocs, getDoc, updateDoc, query as firestore_query, where  } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  query as firestore_query,
+  getDoc,
+  getDocs,
+  updateDoc,
+  where,
+} from "firebase/firestore";
 import { db } from "../config/firebase.js";
-
 
 const getCurrentDateTime = () => {
   const now = new Date();
@@ -15,7 +24,6 @@ const getCurrentDateTime = () => {
 
   return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 };
-
 
 export const getUsernameByEmail = async (email) => {
   try {
@@ -36,18 +44,17 @@ export const getUsernameByEmail = async (email) => {
 
     return {
       success: false,
-      username:  null, // or userData.username depending on your schema
+      username: null, // or userData.username depending on your schema
       message: "No user found with this email.",
     };
   } catch (error) {
     return {
       success: false,
-      username:  null, // or userData.username depending on your schema
+      username: null, // or userData.username depending on your schema
       error: error.message || "Failed due to a network or server error.",
     };
   }
 };
-
 
 export const checkIfUsernameExists = async (username) => {
   try {
@@ -72,12 +79,12 @@ export const checkIfUsernameExists = async (username) => {
       error: error.message || "Failed due to a network or server error.",
     };
   }
-
-
 };
 
-
-export const retrieveSpecificDocumentSubscriptionSpecificUser = async (user_id, sub_id) => {
+export const retrieveSpecificDocumentSubscriptionSpecificUser = async (
+  user_id,
+  sub_id
+) => {
   try {
     const docRef = doc(db, "subscriptions", sub_id); // sub_id is document ID
     const docSnap = await getDoc(docRef);
@@ -115,9 +122,6 @@ export const retrieveSpecificDocumentSubscriptionSpecificUser = async (user_id, 
   }
 };
 
-
-
-
 export const retrieveAllDocumentNotificationSpecificUser = async (user_id) => {
   try {
     const notificationsCol = collection(db, "notifications");
@@ -153,7 +157,6 @@ export const retrieveAllDocumentNotificationSpecificUser = async (user_id) => {
     };
   }
 };
-
 
 export const retrieveAllDocumentSubscriptionSpecificUser = async (user_id) => {
   try {
@@ -212,15 +215,15 @@ export const retrieveAllDocumentSubscription = async () => {
       });
     });
 
-    return { 
-        success: true,
-        message: 'All document successfully retrieved.',
-        data: data
+    return {
+      success: true,
+      message: "All document successfully retrieved.",
+      data: data,
     };
   } catch (error) {
     return {
-        success: false,
-        error: error.message || "Failed due to a network or server error.",
+      success: false,
+      error: error.message || "Failed due to a network or server error.",
     };
   }
 };
@@ -246,19 +249,18 @@ export const retrieveAllDocumentUser = async () => {
       });
     });
 
-    return { 
-        success: true,
-        message: 'All document successfully retrieved.',
-        data: data
+    return {
+      success: true,
+      message: "All document successfully retrieved.",
+      data: data,
     };
   } catch (error) {
     return {
-        success: false,
-        error: error.message || "Failed due to a network or server error.",
+      success: false,
+      error: error.message || "Failed due to a network or server error.",
     };
   }
 };
-
 
 export const createDocumentNotification = async (notification_info) => {
   try {
@@ -269,22 +271,21 @@ export const createDocumentNotification = async (notification_info) => {
       is_read: notification_info.is_read,
       id: notification_info.id,
       uid: notification_info.uid,
-      created_at: getCurrentDateTime()
+      created_at: getCurrentDateTime(),
     });
 
-    return { 
-        success: true,
-        message: 'Document successfully created.',
-        data: notification
+    return {
+      success: true,
+      message: "Document successfully created.",
+      data: notification,
     };
   } catch (error) {
     return {
-        success: false,
-        error: error.message || "Failed due to a network or server error.",
+      success: false,
+      error: error.message || "Failed due to a network or server error.",
     };
   }
 };
-
 
 export const createDocumentSubscription = async (subscription_info) => {
   try {
@@ -297,18 +298,18 @@ export const createDocumentSubscription = async (subscription_info) => {
       remind_me: subscription_info.remind_me,
       selected_color: subscription_info.selected_color,
       payment_status: subscription_info.payment_status,
-      created_at: getCurrentDateTime()
+      created_at: getCurrentDateTime(),
     });
 
-    return { 
-        success: true,
-        message: 'Document successfully created.',
-        data: user
+    return {
+      success: true,
+      message: "Document successfully created.",
+      data: user,
     };
   } catch (error) {
     return {
-        success: false,
-        error: error.message || "Failed due to a network or server error.",
+      success: false,
+      error: error.message || "Failed due to a network or server error.",
     };
   }
 };
@@ -321,20 +322,18 @@ export const createDocumentUser = async (user_info) => {
       username: user_info.username,
     });
 
-    return { 
-        success: true,
-        message: 'Document successfully created.',
-        data: user
+    return {
+      success: true,
+      message: "Document successfully created.",
+      data: user,
     };
   } catch (error) {
     return {
-        success: false,
-        error: error.message || "Failed due to a network or server error.",
+      success: false,
+      error: error.message || "Failed due to a network or server error.",
     };
   }
 };
-
-
 
 export const updateDocumentSubscription = async (docId, subscription_info) => {
   try {
@@ -344,8 +343,8 @@ export const updateDocumentSubscription = async (docId, subscription_info) => {
     if (!docSnap.exists()) {
       return {
         success: false,
-        message: `Document with ID "${docId}" does not exist.`,        
-        data: []
+        message: `Document with ID "${docId}" does not exist.`,
+        data: [],
       };
     }
 
@@ -359,19 +358,18 @@ export const updateDocumentSubscription = async (docId, subscription_info) => {
       selected_color: subscription_info.selected_color,
     });
 
-    return { 
-        success: true,
-        message: 'Document successfully updated.',
-        data: []
+    return {
+      success: true,
+      message: "Document successfully updated.",
+      data: [],
     };
   } catch (error) {
     return {
-        success: false,
-        error: error.message || "Failed due to a network or server error.",
+      success: false,
+      error: error.message || "Failed due to a network or server error.",
     };
   }
 };
-
 
 export const updateDocumentUserProfileByUid = async (uid, user_info) => {
   try {
@@ -383,7 +381,7 @@ export const updateDocumentUserProfileByUid = async (uid, user_info) => {
       return {
         success: false,
         message: `No user found with uid "${uid}".`,
-        data: []
+        data: [],
       };
     }
 
@@ -392,15 +390,14 @@ export const updateDocumentUserProfileByUid = async (uid, user_info) => {
     const docRef = userDoc.ref;
 
     await updateDoc(docRef, {
-     // email: user_info.email,
-      username: user_info.username
+      // email: user_info.email,
+      username: user_info.username,
     });
-
 
     return {
       success: true,
       message: "User profile successfully updated.",
-      data: []
+      data: [],
     };
   } catch (error) {
     return {
@@ -410,7 +407,6 @@ export const updateDocumentUserProfileByUid = async (uid, user_info) => {
   }
 };
 
-
 export const updateDocumentUser = async (docId, user_info) => {
   try {
     const docRef = doc(db, "users", docId);
@@ -419,8 +415,8 @@ export const updateDocumentUser = async (docId, user_info) => {
     if (!docSnap.exists()) {
       return {
         success: false,
-        message: `Document with ID "${docId}" does not exist.`,        
-        data: []
+        message: `Document with ID "${docId}" does not exist.`,
+        data: [],
       };
     }
 
@@ -432,20 +428,18 @@ export const updateDocumentUser = async (docId, user_info) => {
 
     //console.log("Document updated");
 
-    return { 
-        success: true,
-        message: 'Document successfully updated.',
-        data: []
+    return {
+      success: true,
+      message: "Document successfully updated.",
+      data: [],
     };
   } catch (error) {
     return {
-        success: false,
-        error: error.message || "Failed due to a network or server error.",
+      success: false,
+      error: error.message || "Failed due to a network or server error.",
     };
   }
 };
-
-
 
 export const deleteDocumentSubscription = async (docId) => {
   try {
@@ -453,7 +447,7 @@ export const deleteDocumentSubscription = async (docId) => {
     const docSnap = await getDoc(docRef);
 
     if (!docSnap.exists()) {
-     // console.log(`Document with ID "${docId}" does not exist.`)
+      // console.log(`Document with ID "${docId}" does not exist.`)
       return {
         success: false,
         message: `Document with ID "${docId}" does not exist.`,
@@ -462,19 +456,18 @@ export const deleteDocumentSubscription = async (docId) => {
     }
     await deleteDoc(docRef);
 
-    return { 
-        success: true,
-        message: 'Document successfully deleted.',
-        data: []
+    return {
+      success: true,
+      message: "Document successfully deleted.",
+      data: [],
     };
   } catch (error) {
     return {
-        success: false,
-        error: error.message || "Failed due to a network or server error.",
+      success: false,
+      error: error.message || "Failed due to a network or server error.",
     };
   }
 };
-
 
 export const deleteDocumentUser = async (docId) => {
   try {
@@ -490,22 +483,82 @@ export const deleteDocumentUser = async (docId) => {
     }
     await deleteDoc(docRef);
 
-    return { 
-        success: true,
-        message: 'Document successfully deleted.',
-        data: []
+    return {
+      success: true,
+      message: "Document successfully deleted.",
+      data: [],
     };
   } catch (error) {
     return {
-        success: false,
-        error: error.message || "Failed due to a network or server error.",
+      success: false,
+      error: error.message || "Failed due to a network or server error.",
     };
   }
 };
 
-(async () => {
+export const pushNotification = async () => {
+  try {
+    const fullDateTime = getCurrentDateTime();
+    const [datePart] = fullDateTime.split(" ");
+    const [yearStr, monthStr, dayStr] = datePart.split("-");
 
-  await retrieveSpecificDocumentSubscriptionSpecificUser("B463Tmk1WSSo2TyJm29ZH5c2MDg2", "bvKdVFEQ2sQuMrKBRY9i");
+    const year = parseInt(yearStr);
+    const month = parseInt(monthStr);
+    const day = parseInt(dayStr);
+
+    const userId = await AsyncStorage.getItem("userId");
+    if (!userId) {
+      console.warn("No user ID found.");
+      return;
+    }
+
+    const result = await retrieveAllDocumentSubscriptionMonthlySpecificUser(
+      userId,
+      { month, year }
+    );
+
+    if (!result.success || result.data.length === 0) {
+      console.log("No subscriptions for this date.");
+      return;
+    }
+
+    result.data.forEach((item) => {
+      const [dueYear, dueMonth, dueDayStr] = item.due_date.split("-");
+      const dueDay = parseInt(dueDayStr);
+
+      if (dueDay === day) {
+        sendLocalNotification(
+          "Due Today!",
+          `Your ${item.app_name}'s due date is today!`
+        );
+      } else if (dueDay - day === 3) {
+        sendLocalNotification(
+          "Upcoming Due Date",
+          `Reminder: Your ${item.app_name}'s due date is in 3 days.`
+        );
+      }
+    });
+  } catch (error) {
+    console.error("Error in pushNotification: ", error);
+  }
+};
+
+const sendLocalNotification = async (title, body) => {
+  await Notifications.scheduleNotificationAsync({
+    content: {
+      title,
+      body,
+      sound: "default",
+    },
+    trigger: null,
+  });
+};
+
+(async () => {
+  await retrieveSpecificDocumentSubscriptionSpecificUser(
+    "B463Tmk1WSSo2TyJm29ZH5c2MDg2",
+    "bvKdVFEQ2sQuMrKBRY9i"
+  );
   // const date_info = {
   //   month: 6,
   //   year: 2025,
@@ -513,18 +566,18 @@ export const deleteDocumentUser = async (docId) => {
 
   //await retrieveAllDocumentSubscriptionMonthlySpecificUser('EYeFlZjKQKXBVdYUoPa1SooWa6t1', date_info);
 
-    // const user_info = {
-    // email: "pink21@example.com",
-    // password: "password",
-    // name: "Adrian Manatad",
-    // phone: "123456789",
-    // };
+  // const user_info = {
+  // email: "pink21@example.com",
+  // password: "password",
+  // name: "Adrian Manatad",
+  // phone: "123456789",
+  // };
 
-    // await authenticateUser({ auth, user_info });
-   // await createUser(user_info);
+  // await authenticateUser({ auth, user_info });
+  // await createUser(user_info);
 
- // await updateDocument('6UL0YX5VxDVF94GqiPRF', user_info);
+  // await updateDocument('6UL0YX5VxDVF94GqiPRF', user_info);
   //await deleteDocument('uusyMnGwpkcQR1BtHpiL');
   //await retrieveAllDocumentUser();
- // await deleteDocumentUser('n8TF8aMcTHqWZZvVqLia');
- })();
+  // await deleteDocumentUser('n8TF8aMcTHqWZZvVqLia');
+})();
