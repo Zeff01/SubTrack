@@ -1,9 +1,14 @@
-// import { View, Text, ScrollView, TouchableOpacity, TextInput, Image  } from 'react-native';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import { FontAwesome } from '@expo/vector-icons';
 import React, { useState, useCallback } from 'react';
-import { View, TextInput, Button, Text, TouchableOpacity, Alert, ScrollView, Pressable } from 'react-native';
-import { SelectList } from 'react-native-dropdown-select-list'; // You may need to install this library for dropdowns
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  TextInput,
+  Alert,
+  Pressable,
+} from 'react-native';
+import { SelectList } from 'react-native-dropdown-select-list';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { useNavigation } from '@react-navigation/native';
 import { createDocumentSubscription } from "../../../services/userService.js";
@@ -11,8 +16,7 @@ import { User } from 'firebase/auth';
 import { useFocusEffect } from '@react-navigation/native';
 import ColorModal from '../../modals/SelectColorModal';
 import { useAuth } from '../../providers/AuthProvider';
-
-import { cycles, reminders, payments } from '../../modules/constants'; // Adjust path as needed
+import { cycles, reminders } from '../../modules/constants';
 
 const AddSubscriptionScreen = () => {
   const navigation = useNavigation();
@@ -21,178 +25,203 @@ const AddSubscriptionScreen = () => {
   const [dueDate, setDueDate] = useState(new Date());
   const [cycle, setCycle] = useState('');
   const [remindMe, setRemindMe] = useState('');
-  const [paymentStatus, setPaymentStatus] = useState('');
-  const [show, setShow] = useState(false);
-  const [userData, setUserData] =  useState<User | null>(null); // ✅ Allow User or null
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [userData, setUserData] = useState<User | null>(null);
   const [selectedColor, setSelectedColor] = useState('#7FB3FF');
   const [showModal, setShowModal] = useState(false);
   const { user, authLoading } = useAuth();
 
+  const [errors, setErrors] = useState({
+    appName: '',
+    cost: '',
+    cycle: '',
+    remindMe: '',
+  });
+
   useFocusEffect(
-      useCallback(() => {
-          setUserData(user);
-      }, [authLoading, user])
+    useCallback(() => {
+      setUserData(user);
+    }, [authLoading, user])
   );
 
-   const onChangeDate = (event: DateTimePickerEvent, date?: Date) => {
+  const onChangeDate = (event: DateTimePickerEvent, date?: Date) => {
     if (event.type === 'set' && date) {
       setDueDate(date);
     }
-    setShow(false);
+    setShowDatePicker(false);
   };
 
+  const validate = () => {
+    const newErrors: any = {};
 
-  const reset = async () => {
-      setAppName('');
-      setCost('');
-      setDueDate(new Date());
-      setSelectedColor('#7FB3FF');
-      // setCycle('');
-      // setRemindMe('');
-      // setPaymentStatus('');
-  }
+    if (!appName.trim()) newErrors.appName = 'App name is required';
+    if (!cost.trim()) {
+      newErrors.cost = 'Cost is required';
+    } else if (isNaN(Number(cost))) {
+      newErrors.cost = 'Cost must be a valid number';
+    }
+
+    if (!cycle) newErrors.cycle = 'Cycle is required';
+    if (!remindMe) newErrors.remindMe = 'Reminder is required';
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const resetForm = () => {
+    setAppName('');
+    setCost('');
+    setDueDate(new Date());
+    setSelectedColor('#7FB3FF');
+    //setCycle('');
+    //setRemindMe('');
+    setErrors({
+      appName: '',
+      cost: '',
+      cycle: '',
+      remindMe: '',
+    });
+  };
 
   const handleAddSubscription = async () => {
-      if (appName === "" || cost === ""  || dueDate.toLocaleDateString() === "" || cycle === ""  || remindMe === "" || selectedColor === "") {
-        Alert.alert("Validation", "Please fill in all fields");
-        return;
-      }
-  
-      try {
-        const user_info = { uid: userData?.uid, app_name: appName, cost: cost, due_date: dueDate.toLocaleDateString(), cycle: cycle, remind_me: remindMe, selected_color : selectedColor }; // shorthand for object properties
-        const response = await createDocumentSubscription(user_info);
-        Alert.alert("Success", JSON.stringify(user_info, null, 2));
-        reset();
-      } catch (error) {
-        Alert.alert("Error", "An error occurred while logging in.");
-      }
+    if (!validate()) return;
+
+    try {
+      const payload = {
+        uid: userData?.uid,
+        app_name: appName,
+        cost: cost,
+        due_date: dueDate.toLocaleDateString(),
+        cycle: cycle,
+        remind_me: remindMe,
+        selected_color: selectedColor,
+      };
+
+      await createDocumentSubscription(payload);
+      Alert.alert('Success', 'Subscription added successfully!');
+      resetForm();
+    } catch (err) {
+      Alert.alert('Error', 'Failed to add subscription.');
+    }
   };
-  
 
-return (
-  <>
-        <View className="pt-12 pb-6 px-6 bg-[#D9D9D9] rounded-b-3xl">
-          <View className="relative items-center justify-center">
-            {/* <TouchableOpacity
-             // onPress={() => navigation.goBack()}
-              onPress={() => (navigation as any).navigate('Home')}
-              className="absolute left-0 px-4"
-            >
-              <Ionicons name="chevron-back" size={25} color="black" />
-            </TouchableOpacity> */}
-            <Text className="text-xl font-semibold text-gray-800">
-               Add Subscription
-            </Text>
-          </View>
+  return (
+    <>
+      <View className="pt-12 pb-6 px-6 bg-[#D9D9D9] rounded-b-3xl">
+        <View className="relative items-center justify-center">
+          <Text className="text-xl font-semibold text-gray-800">Add Subscription</Text>
         </View>
+      </View>
 
-        <ScrollView>
+      <ScrollView>
         <View className="flex-1 bg-white p-4">
-          
-             <View>
-              <Text className="text-sm mb-1 mt-4">App Name</Text>
-              <TextInput 
-                className="border border-gray-600 rounded-xl p-4" 
-                placeholder="Enter App Name" 
-                keyboardType="default"  // ✅ Optional, can also be removed
-                value={appName}
-                onChangeText={setAppName}
-              />
-            </View>
-            
-            <View>
-              <Text className="text-sm mb-1 mt-4">Cost</Text>
-              <TextInput 
-                className="border border-gray-600 rounded-xl p-4" 
-                placeholder="Enter cost" 
-                keyboardType="numeric"
-                value={cost}
-                onChangeText={setCost}
-              />
-            </View>
 
-            {/* <View >
-              <Text className="text-sm mb-1 mt-3">App Name</Text>
-              <SelectList setSelected={setAppName} data={appNames} placeholder="Select App" />
-            </View> */}
+          {/* App Name */}
+          <Text className="text-sm mb-1 mt-4">App Name</Text>
+          <TextInput
+            className="border border-gray-400 rounded-xl p-4"
+            placeholder="Enter app name"
+            value={appName}
+            onChangeText={(text) => {
+              setAppName(text);
+              setErrors({ ...errors, appName: '' });
+            }}
+          />
+          <Text className={`text-red-500 ${errors.appName ? '' : 'invisible'}`}>
+            {errors.appName || 'placeholder'}
+          </Text>
 
-            <View>
-                <Text className="text-sm mb-1 mt-4">Due Date</Text>
-                <TouchableOpacity onPress={() => setShow(true)} 
-                  className="border border-gray-600 rounded-xl p-4" 
-                >
-                  <Text className="text-black">{dueDate.toLocaleDateString()}</Text>
-                </TouchableOpacity>
-            </View>
+          {/* Cost */}
+          <Text className="text-sm mb-1 mt-1">Cost</Text>
+          <TextInput
+            className="border border-gray-400 rounded-xl p-4"
+            placeholder="Enter cost"
+            keyboardType="numeric"
+            value={cost}
+            onChangeText={(text) => {
+              setCost(text);
+              setErrors({ ...errors, cost: '' });
+            }}
+          />
+          <Text className={`text-red-500 ${errors.cost ? '' : 'invisible'}`}>
+            {errors.cost || 'placeholder'}
+          </Text>
 
-            <View>
-              <Text className="text-sm mb-1 mt-4">Cycle</Text>
-              <SelectList setSelected={setCycle} data={cycles} placeholder="Select Cycle" />
-            </View>
+          {/* Due Date */}
+          <Text className="text-sm mb-1 mt-1">Due Date</Text>
+          <TouchableOpacity
+            onPress={() => setShowDatePicker(true)}
+            className="border border-gray-400 rounded-xl p-4"
+          >
+            <Text>{dueDate.toLocaleDateString()}</Text>
+          </TouchableOpacity>
 
-            <View>
-              <Text className="text-sm mb-1 mt-4">Remind Me</Text>
-              <SelectList setSelected={setRemindMe} data={reminders} placeholder="Select Reminder" />
-            </View>
+          {/* Cycle */}
+          <Text className="text-sm mb-1 mt-3">Cycle</Text>
+          <SelectList
+            setSelected={(val: string) => {
+              setCycle(val);
+              setErrors({ ...errors, cycle: '' });
+            }}
+            data={cycles}
+            placeholder="Select cycle"
+            boxStyles={{ borderColor: errors.cycle ? 'red' : '#ccc' }}
+          />
+          <Text className={`text-red-500 ${errors.cycle ? '' : 'invisible'}`}>
+            {errors.cycle || 'placeholder'}
+          </Text>
 
-            {/* <View>
-              <Text className="text-sm mb-1 mt-4">Payment Status</Text>
-              <SelectList setSelected={setPaymentStatus} data={payments} placeholder="Select Payment Status" />
-            </View> */}
-  
-           {/* <View className="h-96">
-            <ColorPicker
-              color={selectedColor}
-              onColorChange={setSelectedColor}
-              thumbSize={40}
-              sliderSize={40}
-              noSnap={true}
-              row={false}
-              swatches={false}
-              discrete={false}
+          {/* Reminder */}
+          <Text className="text-sm mb-1 mt-1">Remind Me</Text>
+          <SelectList
+            setSelected={(val: string) => {
+              setRemindMe(val);
+              setErrors({ ...errors, remindMe: '' });
+            }}
+            data={reminders}
+            placeholder="Select reminder"
+            boxStyles={{ borderColor: errors.remindMe ? 'red' : '#ccc' }}
+          />
+          <Text className={`text-red-500 mb-1 ${errors.remindMe ? '' : 'invisible'}`}>
+            {errors.remindMe || 'placeholder'}
+          </Text>
+
+          {/* Color Picker */}
+          <Pressable
+            onPress={() => setShowModal(true)}
+            className="mt-4 px-4 py-3 rounded-lg"
+            style={{ backgroundColor: selectedColor }}
+          >
+            <Text className="text-white text-center font-bold">Selected Color</Text>
+          </Pressable>
+
+          {/* Submit Button */}
+          <TouchableOpacity
+            className="bg-[#3AABCC] rounded-lg p-3 mt-6"
+            onPress={handleAddSubscription}
+          >
+            <Text className="text-white text-center text-xl font-bold">Add Subscription</Text>
+          </TouchableOpacity>
+
+          {/* Color Modal */}
+          <ColorModal
+            visible={showModal}
+            onClose={() => setShowModal(false)}
+            onSelect={setSelectedColor}
+            defaultColor="#7FB3FF"
+          />
+
+          {/* Date Picker */}
+          {showDatePicker && (
+            <DateTimePicker
+              value={dueDate}
+              mode="date"
+              display="default"
+              onChange={onChangeDate}
             />
-            <Text className="my-2 text-lg">Selected Color: {selectedColor}</Text>
-            <Button title="Save Color" onPress={() => alert(`Saving color: ${selectedColor}`)} />
-          </View> */}
-
-          <View>
-            <Pressable
-              onPress={() => setShowModal(true)}
-              //className={`mt-5 px-4 py-3 rounded-lg bg-[${color}]`}
-              className={`mt-4 px-4 py-3 rounded-lg bg-blue-400`}
-              style={{ backgroundColor: `${selectedColor}`}}
-            >
-              <Text className="text-white text-center font-bold">Selected Color</Text>
-            </Pressable>
-            {/* {color && <Text className="mt-4 text-white  px-4 py-3 rounded-lg text-center"  style={{ backgroundColor: `${color}`}} >Selected Color: {color}</Text>} */}
-          </View>
-
-    
-
-            <TouchableOpacity 
-              className="bg-[#3AABCC] rounded-lg p-3 mt-6"
-              onPress={handleAddSubscription}
-            >
-              <Text className="text-white text-center text-xl font-bold">Add Subscription</Text>
-            </TouchableOpacity>
-
-            <ColorModal
-              visible={showModal}
-              onClose={() => setShowModal(false)}
-              onSelect={setSelectedColor}
-              defaultColor={'#7FB3FF'}
-            />
-
-             {show && (
-                <DateTimePicker
-                  value={dueDate}
-                  mode="date"
-                  display="default"
-                  onChange={onChangeDate}
-                />
-              )}
+          )}
         </View>
-        </ScrollView>
+      </ScrollView>
     </>
   );
 };

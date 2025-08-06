@@ -39,6 +39,15 @@ const EditSubscriptionScreen = () => {
   const [selectedColor, setSelectedColor] = useState('#7FB3FF');
   const [userData, setUserData] =  useState<User | null>(null); // ✅ Allow User or null
   const [paymentStatus, setPaymentStatus] = useState('');
+
+  const [errors, setErrors] = useState({
+    appName: '',
+    cost: '',
+    dueDate: '',
+    cycle: '',
+    remindMe: '',
+    selectedColor: '',
+  });
   
   
   useFocusEffect(
@@ -89,29 +98,50 @@ const EditSubscriptionScreen = () => {
   const defaultPayment = payments.find(item => item.key === paymentStatus);
 
 
+const handleEditSubscription = async () => {
+  if (!validateForm()) return;
 
-  const handleEditSubscription = async () => {
-      if (appName === "" || cost === ""  || dueDate?.toLocaleDateString() === "" || cycle === ""  || remindMe === "" || selectedColor === "") {
-        Alert.alert("Validation", "Please fill in all fields");
-        return;
-      }
-  
-      try {
-        const subscription_data = { uid: userData?.uid, app_name: appName, cost: cost, due_date: dueDate?.toLocaleDateString(), cycle: cycle, remind_me: remindMe, selected_color : selectedColor }; // shorthand for object properties
-        const response = await updateDocumentSubscription(id, subscription_data); // Call your Firebase update method
-        Alert.alert("Success", JSON.stringify(subscription_data, null, 2));
-        // (navigation as any).navigate('MainTabsSubscriptions', { screen: 'subscriptions' })
-        (navigation as any).navigate('MainTabs', {
-          screen: 'Subscriptions',
-          params: {
-            screen: 'subscriptions',
-          },
-        });
-      //  reset();
-      } catch (error) {
-        Alert.alert("Error", "An error occurred while logging in.");
-      }
-  };
+  try {
+    const subscription_data = {
+      uid: userData?.uid,
+      app_name: appName,
+      cost,
+      due_date: dueDate?.toLocaleDateString(),
+      cycle,
+      remind_me: remindMe,
+      selected_color: selectedColor,
+    };
+
+    await updateDocumentSubscription(id, subscription_data);
+
+    Alert.alert("Success", "Subscription updated successfully!");
+    (navigation as any).navigate('MainTabs', {
+      screen: 'Subscriptions',
+      params: { screen: 'subscriptions' },
+    });
+
+  } catch (error) {
+    Alert.alert("Error", "An error occurred while updating the subscription.");
+  }
+};
+
+
+  const validateForm = () => {
+  const newErrors: any = {};
+
+  if (!appName.trim()) newErrors.appName = 'App name is required';
+  if (!cost.trim()) newErrors.cost = 'Cost is required';
+  else if (isNaN(Number(cost))) newErrors.cost = 'Cost must be a number';
+
+  if (!dueDate) newErrors.dueDate = 'Due date is required';
+  if (!cycle) newErrors.cycle = 'Cycle selection is required';
+  if (!remindMe) newErrors.remindMe = 'Reminder selection is required';
+  if (!selectedColor) newErrors.selectedColor = 'Color is required';
+
+  setErrors(newErrors);
+  return Object.keys(newErrors).length === 0;
+};
+
 
 return (
   <>
@@ -132,57 +162,89 @@ return (
 
         <View className="flex-1 bg-white p-4">
              <View>
-                        <Text className="text-sm mb-1 mt-4">App Name</Text>
-                        <TextInput 
-                          className="border border-gray-600 rounded-xl p-4" 
-                          placeholder="Enter App Name" 
-                          keyboardType="default"  // ✅ Optional, can also be removed
-                          value={appName}
-                          onChangeText={setAppName}
-                        />
+                <Text className="text-sm mb-1 mt-4">App Name</Text>
+                <TextInput
+                  className="border border-gray-600 rounded-xl p-4"
+                  placeholder="Enter App Name"
+                  value={appName}
+                  onChangeText={(text) => {
+                    setAppName(text);
+                    setErrors({ ...errors, appName: '' });
+                  }}
+                />
+                <Text className={`text-red-500 text-sm  ${errors.appName ? '' : 'invisible'}`}>
+                  {errors.appName || 'placeholder'}
+                </Text>
             </View>
 
             <View>
-              <Text className="text-sm mb-1 mt-4">Cost</Text>
-              <TextInput 
-                className="border border-gray-600 rounded-xl p-4" 
-                placeholder="Enter cost" 
+              <Text className="text-sm mb-1 mt-1">Cost</Text>
+              <TextInput
+                className="border border-gray-600 rounded-xl p-4"
+                placeholder="Enter Cost"
                 keyboardType="numeric"
                 value={cost}
-                onChangeText={setCost}
+                onChangeText={(text) => {
+                  setCost(text);
+                  setErrors({ ...errors, cost: '' });
+                }}
               />
+              <Text className={`text-red-500 text-sm mt-1 ${errors.cost ? '' : 'invisible'}`}>
+                {errors.cost || 'placeholder'}
+              </Text>
+
             </View>
 
             <View>
-                <Text className="text-sm mb-1 mt-4">Due Date</Text>
-                <TouchableOpacity onPress={() => setShow(true)} 
-                  className="border border-gray-600 rounded-xl p-4" 
+                <Text className="text-sm  ">Due Date</Text>
+                <TouchableOpacity
+                  onPress={() => setShow(true)}
+                  className="border border-gray-600 rounded-xl p-4"
                 >
-                  <Text className="text-black">{dueDate?.toLocaleDateString()}</Text>
+                  <Text className="text-black">
+                    {dueDate?.toLocaleDateString() || 'Select Due Date'}
+                  </Text>
                 </TouchableOpacity>
+                <Text className={`text-red-500 text-sm ${errors.dueDate ? '' : 'invisible'}`}>
+                  {errors.dueDate || 'placeholder'}
+                </Text>
             </View>
 
             <View>
-              <Text className="text-sm mb-1 mt-4">Cycle</Text>
-              <SelectList 
-                setSelected={setCycle} 
-                data={cycles} 
+              <Text className="text-sm mb-1 ">Cycle</Text>
+              <SelectList
+                setSelected={(val : any) => {
+                  setCycle(val);
+                  setErrors({ ...errors, cycle: '' });
+                }}
+                data={cycles}
                 placeholder="Select Cycle"
-                save="key" // Ensures it saves the key, not value
+                save="key"
                 defaultOption={defaultCycle}
-               />
+              />
+              <Text className={`text-red-500 text-sm  ${errors.cycle ? '' : 'invisible'}`}>
+                {errors.cycle || 'placeholder'}
+              </Text>
+
             </View>
 
 
             <View>
-              <Text className="text-sm mb-1 mt-4">Remind Me</Text>
-              <SelectList 
-              setSelected={setRemindMe} 
-              data={reminders} 
-              placeholder="Select Reminder" 
-              save="key" // Ensures it saves the key, not value
-              defaultOption={defaultReminder}
+              <Text className="text-sm mb-1 mt-1">Remind Me</Text>
+              <SelectList
+                setSelected={(val : any) => {
+                  setRemindMe(val);
+                  setErrors({ ...errors, remindMe: '' });
+                }}
+                data={reminders}
+                placeholder="Select Reminder"
+                save="key"
+                defaultOption={defaultReminder}
               />
+              <Text className={`text-red-500 text-sm ${errors.remindMe ? '' : 'invisible'}`}>
+                {errors.remindMe || 'placeholder'}
+              </Text>
+
             </View>
 
             {/* <View>
@@ -198,18 +260,24 @@ return (
 
             <View>
               <Pressable
-                onPress={() => setShowModal(true)}
-                //className={`mt-5 px-4 py-3 rounded-lg bg-[${color}]`}
-                className={`mt-4 px-4 py-3 rounded-lg bg-blue-400`}
-                style={{ backgroundColor: `${selectedColor}`}}
+                onPress={() => {
+                  setShowModal(true);
+                  setErrors({ ...errors, selectedColor: '' });
+                }}
+                className="mt-4 px-4 py-3 rounded-lg"
+                style={{ backgroundColor: selectedColor }}
               >
                 <Text className="text-white text-center font-bold">Selected Color</Text>
               </Pressable>
+              <Text className={`text-red-500 text-sm  ${errors.selectedColor ? '' : 'invisible'}`}>
+                {errors.selectedColor || 'placeholder'}
+              </Text>
+
               {/* {color && <Text className="mt-4 text-white  px-4 py-3 rounded-lg text-center"  style={{ backgroundColor: `${color}`}} >Selected Color: {color}</Text>} */}
             </View>
 
             <TouchableOpacity 
-              className="bg-[#3AABCC] rounded-lg p-3 mt-6"
+              className="bg-[#3AABCC] rounded-lg p-3 mt-1"
               onPress={handleEditSubscription}
             >
               <Text className="text-white text-center text-xl font-bold">Update Subscription</Text>
