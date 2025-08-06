@@ -1,22 +1,22 @@
-import React, { useState, useCallback, useMemo  } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Alert  } from 'react-native';
-import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
+import React, { useCallback, useMemo, useState } from 'react';
+import { Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
-import moment from 'moment';
 import { useFocusEffect } from '@react-navigation/native';
+import moment from 'moment';
 
-import { getUsernameByEmail } from "../../../services/userService";
-import { onAuthStateChanged  } from 'firebase/auth';
+import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from "../../../config/firebase.js"; // Assuming db is not needed here
+import { getUsernameByEmail } from "../../../services/userService";
 
 import { User } from 'firebase/auth';
 
-import { useAuth } from '../../providers/AuthProvider'; // Import your AuthProvider
 import { retrieveAllDocumentSubscriptionSpecificUser } from "../../../services/userService.js";
+import { useAuth } from '../../providers/AuthProvider'; // Import your AuthProvider
 
-import PaymentCard from '../../components/PaymentCard';
 import { Subscription } from '../../../types/SubscriptionType';
+import PaymentCard from '../../components/PaymentCard';
 
 
 
@@ -295,15 +295,15 @@ function formatEntryDate(dateStr: string): string {
           </View>
           <View className="flex-row">
             <TouchableOpacity 
-              className="mr-2"
+              className="mr-4"
               onPress={() => (navigation as any).navigate('Home', { screen: 'notification' })}
             >
-              <Text className="text-gray-600">🔔</Text>
+              <Ionicons name="notifications-outline" color="black" size={24}  />
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => (navigation as any).navigate('Account', { screen: 'account_settings' })}
             >
-              <Text className="text-gray-600">⚙️</Text>
+              <Ionicons name="settings-outline" color="black" size={24}  /> 
             </TouchableOpacity>
           </View>
         </View>
@@ -500,7 +500,13 @@ function formatEntryDate(dateStr: string): string {
                             className="py-6 px-4 my-2 flex-row justify-between items-center rounded-3xl shadow-xl"
                             style={{ backgroundColor: `${subscription.selected_color}`}}
                             onPress={() =>
-                              (navigation as any).navigate('SubscriptionDetails', { subscription })
+                              //(navigation as any).navigate('SubscriptionDetails', { subscription })
+                              (navigation as any).navigate('Auth', {
+                                screen: 'SubscriptionDetails',
+                                params: {
+                                  subscription,
+                                },
+                              })
                             }
                           >
                             <View className="flex justify-center items-center min-h-16">

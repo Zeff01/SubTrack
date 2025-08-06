@@ -134,11 +134,11 @@ const SubscriptionDetailsScreen = () => {
         </View>
         <View className="w-full border-b-2 border-gray-800 mb-3 mt-4" />
 
-         <View className="flex flex-row justify-between items-center w-full">
+         {/* <View className="flex flex-row justify-between items-center w-full">
           <Text className="text-sm text-gray-700 mt-4">Payment Status</Text>
           <Text className="text-lg font-medium">{getPaymentLabel(subscriptionData?.payment_status)}</Text>
         </View>
-        <View className="w-full border-b-2 border-gray-800 mb-3 mt-4" />
+        <View className="w-full border-b-2 border-gray-800 mb-3 mt-4" /> */}
 
         <View className="flex flex-row justify-between items-center w-full">
           <Text className="text-sm text-gray-700  w-full py-4" style={{ backgroundColor: subscriptionData?.selected_color}}></Text>
@@ -149,8 +149,15 @@ const SubscriptionDetailsScreen = () => {
         <View className="flex flex-row justify-between items-center w-full">
             <TouchableOpacity 
                 className="bg-[#71E0BB] rounded-lg p-3 mt-6 w-full"
-                onPress={() => (navigation as any).navigate('EditSubscription', {subscription : subscriptionData})}
-                // onPress={() => (navigation as any).navigate('Subscriptions', { screen: 'edit_subscription' })}
+                onPress={() => 
+                  // (navigation as any).navigate('EditSubscription', {subscription : subscriptionData})
+                     (navigation as any).navigate('Auth', {
+                        screen: 'EditSubscription',
+                        params: {
+                          subscription : subscriptionData,
+                        },
+                    })
+                }
             >
                 <Text className="text-white text-center text-xl font-bold">EDIT</Text>
             </TouchableOpacity>

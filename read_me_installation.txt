@@ -26,6 +26,11 @@ npm install react-native-color-picker
 npm install @react-native-community/slider
 npm install react-native-wheel-color-picker
 npm install react-native-heroicons
+npm install react-native-wheel-color-picker
+
+npm install @react-native-firebase/app @react-native-firebase/auth
+
+
 
 
 

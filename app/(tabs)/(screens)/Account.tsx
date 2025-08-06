@@ -16,14 +16,17 @@ import { auth } from "../../../config/firebase.js"; // Assuming db is not needed
 const AccountSettingsScreen = () => {
   const navigation = useNavigation();
 
-  const [isEnabled, setIsEnabled] = React.useState(false);
-  const toggleSwitch = () => setIsEnabled(prev => !prev);
+  const [isEnabledAuth, setIsEnabledAuth] = React.useState(false);
+  const [isEnabledMode, setIsEnabledMode] = React.useState(false);
+  const toggleSwitchAuth = () => setIsEnabledAuth(prev => !prev);
+  const toggleSwitchMode = () => setIsEnabledMode(prev => !prev);
+
 
    const handleLogout = async () => {
     try {
-     // router.replace("/(screens)/welcome");
       await signOut(auth);
-      (navigation as any).navigate('Login')
+     // (navigation as any).navigate('Login')
+      (navigation as any).navigate('App', { screen: 'Login' });
       Alert.alert("Logged out", "You have been signed out.");
     } catch (error) {
       Alert.alert("Error", "Failed to logout. Please try again.");
@@ -33,6 +36,7 @@ const AccountSettingsScreen = () => {
 
   return (
     <>
+    <View className="flex-1 bg-white">
        <View className="pt-12 pb-6 px-6 bg-[#D9D9D9] rounded-b-3xl">
           <View className="relative items-center justify-center">
             {/* <TouchableOpacity
@@ -96,8 +100,8 @@ const AccountSettingsScreen = () => {
             trackColor={{ false: '#e5e7eb', true: '#3b82f6' }}
             thumbColor="#ffffff"
             ios_backgroundColor="#e5e7eb"
-            onValueChange={toggleSwitch}
-            value={isEnabled}
+            onValueChange={toggleSwitchAuth}
+            value={isEnabledAuth}
           />
         </View>
       </View>
@@ -134,8 +138,8 @@ const AccountSettingsScreen = () => {
                 trackColor={{ false: '#e5e7eb', true: '#3b82f6' }}
                 thumbColor="#ffffff"
                 ios_backgroundColor="#e5e7eb"
-                onValueChange={toggleSwitch}
-                value={isEnabled}
+                onValueChange={toggleSwitchMode}
+                value={isEnabledMode}
               />
             </View>
           ) : (
@@ -172,7 +176,6 @@ const AccountSettingsScreen = () => {
 
           <TouchableOpacity
             className={`flex-row justify-between items-center py-4`}
-           // onPress={() => (navigation as any).navigate('Login')}
             onPress={handleLogout} 
           >
             <View>
@@ -181,20 +184,9 @@ const AccountSettingsScreen = () => {
             </View>
             <Text className="text-red-400 text-xl">{'›'}</Text>
           </TouchableOpacity>
-
-             {/* <TouchableOpacity
-            className={`flex-row justify-between items-center py-4`}
-           onPress={() => (navigation as any).navigate('Login')}
-          //  onPress={handleLogout} 
-          >
-            <View>
-              <Text className="font-medium text-red-600">Logout</Text>
-          
-            </View>
-            <Text className="text-red-400 text-xl">{'›'}</Text>
-          </TouchableOpacity> */}
       </View>
     </ScrollView>
+     </View>
         </>
   );
 };

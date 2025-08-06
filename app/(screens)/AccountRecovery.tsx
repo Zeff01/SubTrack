@@ -7,13 +7,29 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  Alert
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { auth } from "../../config/firebase.js";
+import { sendPasswordResetEmail } from "firebase/auth";
 
 
 export default function AccountRecoveryScreen() {
   const navigation = useNavigation();
   const [email, setEmail] = useState('');
+
+
+  const handleResetPassword = async () => {
+    console.log(123)
+    console.log(email)
+    try {
+      await sendPasswordResetEmail(auth, email);
+      Alert.alert("Success", "Success");
+    } catch (error) {
+      Alert.alert("Error", "An error occurred while logging in.");
+    }
+  }
+  
 
   return (
     <KeyboardAvoidingView
@@ -43,7 +59,7 @@ export default function AccountRecoveryScreen() {
           <TouchableOpacity
             className="bg-[#3AABCC] rounded-xl py-3 mb-6 shadow-md"
             activeOpacity={0.8}
-            onPress={() => alert(`OTP sent to: ${email}`)}
+            onPress={handleResetPassword}
           >
             <Text className="text-white font-bold text-lg text-center">Send OTP</Text>
           </TouchableOpacity>
@@ -52,7 +68,8 @@ export default function AccountRecoveryScreen() {
             <Text className="text-gray-500 font-medium">Remember your password?</Text>
             <TouchableOpacity activeOpacity={0.7}
             //  onPress={() => alert('Navigate to Login')}
-              onPress={() => (navigation as any).navigate('Login')}
+              // onPress={() => (navigation as any).navigate('Login')}
+              onPress={() => (navigation as any).navigate('App', { screen: 'Login' })}
             >
               <Text className="text-[#3AABCC] font-semibold underline">Login</Text>
             </TouchableOpacity>

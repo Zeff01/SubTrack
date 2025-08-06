@@ -60,7 +60,7 @@ const EditSubscriptionScreen = () => {
       setDueDate(convertToUSDateFormat(subscription.due_date));
       setSelectedColor(subscription.selected_color);
       setID(subscription.id);
-      setPaymentStatus(subscription.payment_status);
+     // setPaymentStatus(subscription.payment_status);
     }
   }, [subscription]);
 
@@ -91,13 +91,13 @@ const EditSubscriptionScreen = () => {
 
 
   const handleEditSubscription = async () => {
-      if (appName === "" || cost === ""  || dueDate?.toLocaleDateString() === "" || cycle === ""  || remindMe === "" || paymentStatus === "" || selectedColor === "") {
+      if (appName === "" || cost === ""  || dueDate?.toLocaleDateString() === "" || cycle === ""  || remindMe === "" || selectedColor === "") {
         Alert.alert("Validation", "Please fill in all fields");
         return;
       }
   
       try {
-        const subscription_data = { uid: userData?.uid, app_name: appName, cost: cost, due_date: dueDate?.toLocaleDateString(), cycle: cycle, remind_me: remindMe, payment_status: paymentStatus, selected_color : selectedColor }; // shorthand for object properties
+        const subscription_data = { uid: userData?.uid, app_name: appName, cost: cost, due_date: dueDate?.toLocaleDateString(), cycle: cycle, remind_me: remindMe, selected_color : selectedColor }; // shorthand for object properties
         const response = await updateDocumentSubscription(id, subscription_data); // Call your Firebase update method
         Alert.alert("Success", JSON.stringify(subscription_data, null, 2));
         // (navigation as any).navigate('MainTabsSubscriptions', { screen: 'subscriptions' })
@@ -115,6 +115,7 @@ const EditSubscriptionScreen = () => {
 
 return (
   <>
+    <View className="flex-1 bg-white">
       <View className="pt-12 pb-6 px-6 bg-[#D9D9D9] rounded-b-3xl">
           <View className="relative items-center justify-center">
             <TouchableOpacity
@@ -184,7 +185,7 @@ return (
               />
             </View>
 
-            <View>
+            {/* <View>
                 <Text className="text-sm mb-1 mt-4">Payment Status</Text>
                 <SelectList 
                 setSelected={setPaymentStatus} 
@@ -193,7 +194,7 @@ return (
                 save="key" // Ensures it saves the key, not value
                 defaultOption={defaultPayment}
                  />
-            </View>
+            </View> */}
 
             <View>
               <Pressable
@@ -218,6 +219,7 @@ return (
               visible={showModal}
               onClose={() => setShowModal(false)}
               onSelect={setSelectedColor}
+              defaultColor={subscription.selected_color}
             />
 
              {show && (
@@ -229,6 +231,7 @@ return (
                 />
               )}
         </View>
+      </View>
     </>
   );
 };

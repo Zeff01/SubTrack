@@ -79,6 +79,7 @@ const SubscriptionScreen = () => {
 
    return (
     <>
+    <View className="flex-1 bg-white">
     <View className="pt-12 pb-6 px-6 bg-[#D9D9D9] rounded-b-3xl">
       <View className="relative items-center justify-center">
         {/* <TouchableOpacity
@@ -151,7 +152,13 @@ const SubscriptionScreen = () => {
                 key={index}
                 className="py-6 px-4 my-1 flex-row justify-between items-center rounded-3xl shadow-xl bg-white"
                 onPress={() =>
-                  (navigation as any).navigate('SubscriptionDetails', { subscription })
+                  // (navigation as any).navigate('SubscriptionDetails', { subscription })
+                  (navigation as any).navigate('Auth', {
+                      screen: 'SubscriptionDetails',
+                      params: {
+                        subscription,
+                      },
+                  })
                 }
               >
                 <View className="flex justify-center items-center min-h-16">
@@ -183,6 +190,7 @@ const SubscriptionScreen = () => {
           )}
         </View>
       </ScrollView>
+    </View>
     </View>
        </>
   );

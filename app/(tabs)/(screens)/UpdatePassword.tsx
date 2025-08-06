@@ -41,7 +41,8 @@ const UpdatePasswordScreen = () => {
 
         if (response.success) {
           Alert.alert("Success", response.message);
-          (navigation as any).navigate('Login')
+          // (navigation as any).navigate('Login')
+          (navigation as any).navigate('App', { screen: 'Login' })
         } else {
           Alert.alert("Update Password Failed", response.error);
         }
@@ -53,6 +54,7 @@ const UpdatePasswordScreen = () => {
 
   return (
     <>     
+    <View className="flex-1 bg-white">
      <View className="pt-12 pb-6 px-6 bg-[#D9D9D9] rounded-b-3xl">
           <View className="relative items-center justify-center">
             <TouchableOpacity
@@ -68,7 +70,7 @@ const UpdatePasswordScreen = () => {
         </View>
 
       {/* Form */}
-      <ScrollView className="flex-1 bg-gray-50 px-4 py-6">
+      <ScrollView className="flex-1 bg-white px-4 py-6">
         <View className="bg-white rounded-2xl p-6 shadow-md">
           {/* Current Password */}
           {/* <View className="mb-4">
@@ -115,6 +117,7 @@ const UpdatePasswordScreen = () => {
           </TouchableOpacity>
         </View>
       </ScrollView>
+      </View>
     </>
   );
 };

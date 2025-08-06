@@ -62,11 +62,8 @@ const UpdateProfileScreen = () => {
         const response = await changeProfile(user, user_info); // Call your Firebase update method
 
         if (response.success) {
-          Alert.alert("Success", JSON.stringify(user_info, null, 2));
-
-          
+          Alert.alert("Success", JSON.stringify(user_info, null, 2)); 
          // Alert.alert("Success", response.message);
-          //(navigation as any).navigate('Login')
         } else {
           Alert.alert("Update Profile Failed", response.error);
           console.log(response.error)
@@ -78,6 +75,7 @@ const UpdateProfileScreen = () => {
 
   return (
     <>
+    <View className="flex-1 bg-white">
     <View className="pt-12 pb-6 px-6 bg-[#D9D9D9] rounded-b-3xl">
           <View className="relative items-center justify-center">
             <TouchableOpacity
@@ -96,7 +94,7 @@ const UpdateProfileScreen = () => {
       behavior={'padding'}
      // className="flex-1 bg-[#3AABCC] justify-center px-6"
     >
-    <ScrollView className="bg-gray-50 px-4 py-6">
+    <ScrollView className="bg-white px-4 py-6">
       {/* Form */}
   
       <View className="bg-white rounded-2xl p-6 shadow-md">
@@ -136,6 +134,7 @@ const UpdateProfileScreen = () => {
       </View>
     </ScrollView>
     </KeyboardAvoidingView>
+    </View>
   </>
   );
 };

@@ -53,13 +53,13 @@ const AddSubscriptionScreen = () => {
   }
 
   const handleAddSubscription = async () => {
-      if (appName === "" || cost === ""  || dueDate.toLocaleDateString() === "" || cycle === ""  || remindMe === "" || paymentStatus === "" || selectedColor === "") {
+      if (appName === "" || cost === ""  || dueDate.toLocaleDateString() === "" || cycle === ""  || remindMe === "" || selectedColor === "") {
         Alert.alert("Validation", "Please fill in all fields");
         return;
       }
   
       try {
-        const user_info = { uid: userData?.uid, app_name: appName, cost: cost, due_date: dueDate.toLocaleDateString(), cycle: cycle, remind_me: remindMe, payment_status : paymentStatus, selected_color : selectedColor }; // shorthand for object properties
+        const user_info = { uid: userData?.uid, app_name: appName, cost: cost, due_date: dueDate.toLocaleDateString(), cycle: cycle, remind_me: remindMe, selected_color : selectedColor }; // shorthand for object properties
         const response = await createDocumentSubscription(user_info);
         Alert.alert("Success", JSON.stringify(user_info, null, 2));
         reset();
@@ -135,10 +135,10 @@ return (
               <SelectList setSelected={setRemindMe} data={reminders} placeholder="Select Reminder" />
             </View>
 
-            <View>
+            {/* <View>
               <Text className="text-sm mb-1 mt-4">Payment Status</Text>
               <SelectList setSelected={setPaymentStatus} data={payments} placeholder="Select Payment Status" />
-            </View>
+            </View> */}
   
            {/* <View className="h-96">
             <ColorPicker
@@ -180,6 +180,7 @@ return (
               visible={showModal}
               onClose={() => setShowModal(false)}
               onSelect={setSelectedColor}
+              defaultColor={'#7FB3FF'}
             />
 
              {show && (

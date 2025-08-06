@@ -10,31 +10,59 @@ import {
 } from 'react-native';
 
 import { useNavigation } from '@react-navigation/native';
-
 import { authenticateUser } from "../../services/authService";
-
 
 export default function LoginScreen() {
   const navigation = useNavigation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
+  const [errors, setErrors] = useState({
+    email: '',
+    password: ''
+  });
 
-  
-  const loginSubmit = async () => {
-    if (email === "" || password === "") {
-      Alert.alert("Validation", "Please fill in all fields");
-      return;
+  const validate = () => {
+    const newErrors: any = {};
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!email.trim()) {
+      newErrors.email = 'Email is required';
+    } else if (!emailRegex.test(email)) {
+      newErrors.email = 'Invalid email address';
     }
 
+    if (!password.trim()) {
+      newErrors.password = 'Password is required';
+    } else if (password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const loginSubmit = async () => {
+    if (!validate()) return;
+
     try {
-      const user_info = { email, password }; // shorthand for object properties
-      const response =  await authenticateUser(user_info);
+      const user_info = { email, password };
+      const response = await authenticateUser(user_info);
 
       if (response.success) {
         Alert.alert("Success", response.message);
-        (navigation as any).navigate('MainTabs', { screen: 'Home' })
+        //(navigation as any).navigate('MainTabs', { screen: 'Home' });
+        (navigation as any).navigate('Auth', {
+          screen: 'MainTabs',
+          params: {
+            screen: 'Home',
+          },
+        });
       } else {
+        if(response.error == "Firebase: Error (auth/invalid-credential).") {
+            Alert.alert("Login Failed", "Invalid email/password combination.");
+            return;
+        }
         Alert.alert("Login Failed", response.error);
       }
     } catch (error) {
@@ -42,10 +70,9 @@ export default function LoginScreen() {
     }
   };
 
-
   return (
     <KeyboardAvoidingView
-      behavior={'padding'}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       className="flex-1 bg-[#3AABCC] justify-center px-6"
     >
       <View className="bg-white rounded-3xl p-8 shadow-lg mt-20">
@@ -53,67 +80,70 @@ export default function LoginScreen() {
           Welcome Back
         </Text>
 
+        {/* Email */}
         <TextInput
-          className="border border-[#3AABCC] rounded-xl px-4 py-3 mb-5 text-base text-gray-800"
+          className="border border-[#3AABCC] rounded-xl px-4 py-3  text-base text-gray-800"
           placeholder="Email"
           placeholderTextColor="#9fcbdc"
           keyboardType="email-address"
           autoCapitalize="none"
           value={email}
-          onChangeText={setEmail}
+          onChangeText={(text) => {
+            setEmail(text);
+            setErrors({ ...errors, email: '' });
+          }}
         />
+        <Text className={`text-red-500 mb-2  ${errors.email ? '' : 'invisible'}`}>
+          {errors.email || 'placeholder'}
+        </Text>
 
+        {/* Password */}
         <TextInput
-          className="border border-[#3AABCC] rounded-xl px-4 py-3 mb-4 text-base text-gray-800"
+          className="border border-[#3AABCC] rounded-xl px-4 py-3  text-base text-gray-800"
           placeholder="Password"
           placeholderTextColor="#9fcbdc"
           secureTextEntry
           value={password}
-          onChangeText={setPassword}
+          onChangeText={(text) => {
+            setPassword(text);
+            setErrors({ ...errors, password: '' });
+          }}
         />
+        <Text className={`text-red-500 mb-2 ${errors.password ? '' : 'invisible'}`}>
+          {errors.password || 'placeholder'}
+        </Text>
 
+        {/* Login Button */}
         <TouchableOpacity
           className="bg-[#3AABCC] rounded-xl py-3 mb-6 shadow-md"
           activeOpacity={0.8}
-          // onPress={() => alert(`Logging in\nEmail: ${email}\nPassword: ${password}`)}
-          // onPress={() => (navigation as any).navigate('MainTabs')}                
-         // onPress={() => (navigation as any).navigate('MainTabs', { screen: 'Home' })}
-         onPress={loginSubmit}
+          onPress={loginSubmit}
         >
           <Text className="text-white font-bold text-lg text-center">Login</Text>
         </TouchableOpacity>
 
-          {/* <TouchableOpacity
-          className="bg-[#3AABCC] rounded-xl py-3 mb-6 shadow-md"
-          activeOpacity={0.8}
-          // onPress={() => alert(`Logging in\nEmail: ${email}\nPassword: ${password}`)}
-          // onPress={() => (navigation as any).navigate('MainTabs')}                
-          onPress={() => (navigation as any).navigate('MainTabs', { screen: 'Home' })}
-       //  onPress={loginSubmit}
-        >
-          <Text className="text-white font-bold text-lg text-center">Home</Text>
-        </TouchableOpacity> */}
-
+        {/* Register Link */}
         <View className="flex-row justify-center items-center">
           <Text className="text-gray-500 font-medium">Don't have an account?</Text>
-          <TouchableOpacity activeOpacity={0.7} 
-         // onPress={() => alert('Navigate to Register')}
-            onPress={() => (navigation as any).navigate('Register')
-}
+          <TouchableOpacity
+            activeOpacity={0.7}
+            // onPress={() => (navigation as any).navigate('Register')}
+            onPress={() => (navigation as any).navigate('App', { screen: 'Register' })}
           >
-            <Text className="text-[#3AABCC] font-semibold underline">Register</Text>
+            <Text className="text-[#3AABCC] font-semibold underline ml-1">Register</Text>
           </TouchableOpacity>
         </View>
-        
-        <TouchableOpacity
-        //   className="bg-[#3AABCC] rounded-xl py-3 mb-6 shadow-md"
-          activeOpacity={0.8}
-          //</View>onPress={() => alert('Navigate to Account Recovery')}    
-            onPress={() => (navigation as any).navigate('AccountRecovery')}
-           >
-          <Text className="text-black font-bold text-lg text-center mt-4">  Forgot Password?</Text>
-        </TouchableOpacity>
 
+        {/* Forgot Password */}
+        <TouchableOpacity
+          activeOpacity={0.8}
+          // onPress={() => (navigation as any).navigate('AccountRecovery')}
+          onPress={() => (navigation as any).navigate('App', { screen: 'AccountRecovery' })}
+        >
+          <Text className="text-black font-bold text-lg text-center mt-4">
+            Forgot Password?
+          </Text>
+        </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
   );

@@ -6,7 +6,7 @@ import { StatusBar } from 'expo-status-bar';
 import { Slot } from 'expo-router';
 
 
-import RootStack from './stacks/RootStack';
+import RootNavigator from './navigators/RootNavigator';
 import AuthProvider from './providers/AuthProvider';
 
 
@@ -16,7 +16,7 @@ export default function App() {
         <>
             <AuthProvider>
               {/* <Slot />  */}
-              <RootStack />
+              <RootNavigator />
               <StatusBar style="auto" />
             </AuthProvider>
         </>

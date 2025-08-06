@@ -96,25 +96,34 @@ const NotificationScreen = () => {
             </View>
           ) : (
             <>
-              {filteredNotifications.map((notif) => (
-                <TouchableOpacity
-                  key={notif.id}
-                  className={`mb-3 p-4 rounded-2xl shadow ${
-                    notif.is_read === 0 ? 'bg-blue-100' : 'bg-white'
-                  }`}
-                  onPress={() =>
-                    (navigation as any).navigate('SubscriptionDetails', { subscription: notif })
-                  }
-                >
-                  <View className="flex-row justify-between items-center mb-1">
-                    <Text className="text-base font-semibold text-gray-800">
-                      {notif.title}
-                    </Text>
-                    <Text className="text-xs text-gray-500">{notif.date}</Text>
-                  </View>
-                  <Text className="text-sm text-gray-600">{notif.message}</Text>
-                </TouchableOpacity>
-              ))}
+              {filteredNotifications.map((notif) => {
+                const bgColor = notif.is_read === 0 ? 'bg-blue-100' : 'bg-white';
+
+                return (
+                  <TouchableOpacity
+                    key={notif.id}
+                    className={`mb-3 p-4 rounded-2xl shadow ${bgColor}`}
+                    onPress={() =>
+                      // (navigation as any).navigate('SubscriptionDetails', { subscription: notif })
+                        (navigation as any).navigate('Auth', {
+                            screen: 'SubscriptionDetails',
+                            params: {
+                              subscription : notif,
+                            },
+                        })
+                    }
+                  >
+                    <View className="flex-row justify-between items-center mb-1">
+                      <Text className="text-base font-semibold text-gray-800">
+                        {notif.title}
+                      </Text>
+                      <Text className="text-xs text-gray-500">{notif.date}</Text>
+                    </View>
+                    <Text className="text-sm text-gray-600">{notif.message}</Text>
+                  </TouchableOpacity>
+                );
+              })}
+
             </>
           )}
         </ScrollView>
