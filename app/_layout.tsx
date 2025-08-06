@@ -17,7 +17,7 @@ export default function App() {
             <AuthProvider>
               {/* <Slot />  */}
               <RootNavigator />
-              <StatusBar style="auto" />
+              {/* <StatusBar style="auto" /> */}
             </AuthProvider>
         </>
   );
