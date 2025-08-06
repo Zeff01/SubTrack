@@ -72,6 +72,33 @@ export const checkIfUsernameExists = async (username) => {
       error: error.message || "Failed due to a network or server error.",
     };
   }
+};
+
+
+
+export const checkIfEmailExists = async (email) => {
+  try {
+    const usersCol = collection(db, "users");
+    const q = firestore_query(usersCol, where("email", "==", email));
+    const snapshot = await getDocs(q);
+
+    if (!snapshot.empty) {
+      return {
+        success: true,
+        message: "Email exists.",
+      };
+    }
+
+    return {
+      success: false,
+      message: "Email is not existing.",
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error.message || "Failed due to a network or server error.",
+    };
+  }
 
 
 };
