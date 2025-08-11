@@ -30,6 +30,7 @@ npm install react-native-wheel-color-picker
 
 npm install @react-native-firebase/app @react-native-firebase/auth
 
+npm install @firebase/auth-react-native
 
 
 

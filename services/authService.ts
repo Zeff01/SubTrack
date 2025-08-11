@@ -99,6 +99,7 @@ export const registerUser = async (user_info: RegisterInfo): Promise<AuthRespons
 
       // Create user document in Firestore
       await createDocumentUser(userData);
+      await signOut(auth);
     }
 
     return { 

@@ -43,7 +43,6 @@ const SubscriptionDetailsScreen = () => {
 
   const fetchSubscription = async (user_uid : string) => {
       const response = await retrieveSpecificDocumentSubscriptionSpecificUser(user_uid, subscription.id); // Call your Firebase update method
-    
       if (response?.data && response.data.length > 0) {
         setSubscriptionData(response.data[0]);
       }

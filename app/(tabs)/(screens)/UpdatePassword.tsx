@@ -38,7 +38,6 @@ const UpdatePasswordScreen = () => {
   
       try {
         const response = await changePassword(user, form.newPassword); // Call your Firebase update method
-
         if (response.success) {
           Alert.alert("Success", response.message);
           // (navigation as any).navigate('Login')

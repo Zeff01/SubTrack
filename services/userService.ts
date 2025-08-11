@@ -158,6 +158,7 @@ export const checkIfEmailExists = async (email: string): Promise<boolean> => {
   try {
     const q = firestore_query(collection(db, "users"), where("email", "==", email));
     const querySnapshot = await getDocs(q);
+
     return !querySnapshot.empty;
   } catch (error) {
     console.error("Error checking email existence:", error);
@@ -178,16 +179,21 @@ export const checkIfUsernameExists = async (username: string): Promise<boolean> 
 
 export const getUsernameByEmail = async (email: string): Promise<string | null> => {
   try {
+    if (!email) {
+      throw new Error("Email is undefined or empty");
+    }
+
     const q = firestore_query(collection(db, "users"), where("email", "==", email));
     const querySnapshot = await getDocs(q);
-    
+
     if (!querySnapshot.empty) {
       const userDoc = querySnapshot.docs[0];
       return userDoc.data().username || null;
     }
+
     return null;
   } catch (error) {
-    console.error("Error getting username by email:", error);
+    // console.error("Error getting username by email:", error);
     return null;
   }
 };
@@ -239,7 +245,7 @@ export const retrieveAllDocumentSubscription = async (): Promise<ServiceResponse
 
 export const retrieveAllDocumentSubscriptionSpecificUser = async (user_id: string): Promise<ServiceResponse<Subscription[]>> => {
   try {
-    const q = firestore_query(collection(db, "subscriptions"), where("user_id", "==", user_id));
+    const q = firestore_query(collection(db, "subscriptions"), where("uid", "==", user_id));
     const querySnapshot = await getDocs(q);
     const subscriptions: Subscription[] = [];
     
@@ -290,31 +296,41 @@ export const retrieveAllDocumentSubscriptionMonthlySpecificUser = async (
 };
 
 export const retrieveSpecificDocumentSubscriptionSpecificUser = async (
-  user_id: string, 
+  user_id: string,
   doc_id: string
-): Promise<ServiceResponse<Subscription | null>> => {
+): Promise<ServiceResponse<Subscription[]>> => {
   try {
     const docRef = doc(db, "subscriptions", doc_id);
     const docSnap = await getDoc(docRef);
-    
-    if (docSnap.exists()) {
-      const data = docSnap.data();
-      if (data.user_id === user_id) {
-        return {
-          success: true,
-          data: { id: docSnap.id, ...data } as Subscription
-        };
-      }
+
+    if (!docSnap.exists()) {
+      return {
+        success: false,
+        message: "Subscription not found.",
+        data: [],
+      };
     }
-    
+
+    const data = docSnap.data();
+
+    if (data.uid !== user_id) {
+      return {
+        success: false,
+        message: "Subscription does not belong to this user.",
+        data: [],
+      };
+    }
+
     return {
-      success: false,
-      error: "Subscription not found or access denied"
+      success: true,
+      message: "Subscription document retrieved successfully.",
+      data: [{ id: docSnap.id, ...data } as Subscription],
     };
   } catch (error: any) {
     return {
       success: false,
-      error: error.message || "Failed to retrieve subscription",
+      error: error.message || "Failed to retrieve subscription.",
+      data: [],
     };
   }
 };

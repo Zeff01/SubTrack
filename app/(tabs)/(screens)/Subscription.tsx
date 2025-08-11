@@ -21,6 +21,7 @@ type Subscription = {
   due_date: string;
   remind_me: string;
   selected_color: string;
+  updated_at: string;
   created_at: string;
 };
 
