@@ -13,9 +13,11 @@ import MonthlyPayment from '../../components/home/MonthlyPayment';
 import UpcomingPayment from '../../components/home/UpcomingPayment';
 import CalendarView from '../../components/home/CalendarView';
 import SubscriptionItem from '../../components/home/SubscriptionItem';
+
 import { Subscription } from '../../../types';
 import { FadeInView } from '../../components/animated/FadeInView';
 import { SlideInView } from '../../components/animated/SlideInView';
+
 import Loading from '../../components/common/Loading';
 import ErrorMessage from '../../components/common/ErrorMessage';
 
@@ -59,7 +61,8 @@ const HomeScreen = () => {
   };
 
   const handleAddSubscription = () => {
-    (navigation as any).navigate('Subscriptions', { screen: 'AddSubscription' });
+    //(navigation as any).navigate('Subscriptions', { screen: 'AddSubscription' });
+    (navigation as any).navigate('Subscriptions', { screen: 'add_subscriptions' })
   };
 
   const handleSubscriptionPress = (subscription: Subscription) => {
@@ -84,13 +87,15 @@ const HomeScreen = () => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 20 }}
       >
+
+
         {/* Header */}
-        <FadeInView delay={0} className="mb-6">
-          <Header username={username} />
+        <FadeInView delay={0} duration={500} className="mb-6">
+           <Header username={username} />
         </FadeInView>
 
         {/* Monthly Payment Summary */}
-        <SlideInView delay={200} direction="up" className="mb-6">
+        <SlideInView delay={200} duration={400} direction="up" className="mb-6">
           <MonthlyPayment 
             monthlyCost={monthlyCost} 
             yearlyCost={yearlyStats.total}
@@ -101,14 +106,14 @@ const HomeScreen = () => {
 
         {/* Upcoming Payments */}
         {upcomingPayments.length > 0 && (
-          <FadeInView delay={400} className="mb-6">
+          <FadeInView delay={400} duration={500} className="mb-6">
             <Text className="text-lg font-semibold text-gray-900 mb-3">Upcoming Payments</Text>
             {upcomingPayments.map((payment, index) => {
               const date = moment(payment.date);
               const totalCost = payment.cost.reduce((sum, cost) => sum + parseFloat(cost), 0);
               
               return (
-                <SlideInView key={index} delay={500 + (index * 100)} direction="right">
+                <SlideInView key={index} delay={500 + (index * 100)} duration={400} direction="right">
                   <UpcomingPayment
                     dayNumber={date.date()}
                     dayName={date.format('ddd')}
@@ -124,7 +129,7 @@ const HomeScreen = () => {
         )}
 
         {/* Calendar */}
-        <FadeInView delay={600} className="mb-6">
+        <FadeInView delay={600} duration={500} className="mb-6">
           <CalendarView
             currentDate={currentDate}
             selectedDay={selectedDay}
@@ -138,7 +143,7 @@ const HomeScreen = () => {
 
         {/* Selected Day Subscriptions */}
         {selectedDaySubscriptions.length > 0 && (
-          <FadeInView delay={700} className="mt-4 border-t-2 pt-6 mb-6">
+          <FadeInView delay={700} duration={500} className="mt-4 border-t-2 pt-6 mb-6">
             <Text className="text-lg font-semibold text-gray-900 mb-3">
               Subscriptions on {moment(selectedDay).format('MMMM D, YYYY')}
             </Text>
@@ -151,7 +156,7 @@ const HomeScreen = () => {
                 onPress={() => handleSubscriptionPress(subscription)}
               />
             ))}
-          </View>
+          </FadeInView>
         )}
       </ScrollView>
     </View>

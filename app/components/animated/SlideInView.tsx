@@ -27,22 +27,22 @@ export const SlideInView: React.FC<SlideInViewProps> = ({
   const getEnteringAnimation = () => {
     switch (direction) {
       case 'left':
-        return SlideInLeft.delay(delay).duration(duration).springify();
+        return SlideInLeft?.delay(delay).duration(duration).springify();
       case 'up':
-        return SlideInUp.delay(delay).duration(duration).springify();
+        return SlideInUp?.delay(delay).duration(duration).springify();
       case 'down':
-        return SlideInDown.delay(delay).duration(duration).springify();
+        return SlideInDown?.delay(delay).duration(duration).springify();
       default:
-        return SlideInRight.delay(delay).duration(duration).springify();
+        return SlideInRight?.delay(delay).duration(duration).springify();
     }
   };
 
   const getExitingAnimation = () => {
     switch (direction) {
       case 'left':
-        return SlideOutLeft.duration(300);
+        return SlideOutLeft?.duration(300);
       default:
-        return SlideOutRight.duration(300);
+        return SlideOutRight?.duration(300);
     }
   };
 
