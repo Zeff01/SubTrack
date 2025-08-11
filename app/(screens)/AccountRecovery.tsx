@@ -42,7 +42,8 @@ export default function AccountRecoveryScreen() {
 
     try {
        const result = await checkIfEmailExists(email);
-       if(result.success) {
+       //if(result.success) {
+        if(result) {
           await sendPasswordResetEmail(auth, email);
           Alert.alert("Password Reset Email Sent", `An email has been sent to ${email}.`);
           return;

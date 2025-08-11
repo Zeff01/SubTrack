@@ -59,13 +59,13 @@ const MonthlyPayment: React.FC<MonthlyPaymentProps> = ({
         <View className="flex-1">
           <Text className="text-xs text-gray-500">Yearly Total</Text>
           <Text className="text-lg font-semibold text-gray-800 mt-1">
-            ₱{yearlyCost.toFixed(2)}
+            ₱{yearlyCost?.toFixed(2)}
           </Text>
         </View>
         <View className="flex-1 ml-4">
           <Text className="text-xs text-gray-500">Monthly Average</Text>
           <Text className="text-lg font-semibold text-gray-800 mt-1">
-            ₱{yearlyAverage.toFixed(2)}
+            ₱{yearlyAverage?.toFixed(2)}
           </Text>
         </View>
       </View>

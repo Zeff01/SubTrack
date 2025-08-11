@@ -51,7 +51,9 @@ const Header: React.FC<HeaderProps> = ({ username }) => {
       withSpring(1.2),
       withSpring(1)
     );
-    (navigation as any).navigate('Auth', { screen: 'Notification' });
+    console.log(123);
+    // (navigation as any).navigate('Auth', { screen: 'Notification' });
+    (navigation as any).navigate('Home', { screen: 'notification' })
   };
 
   return (
@@ -59,12 +61,12 @@ const Header: React.FC<HeaderProps> = ({ username }) => {
       <View className="flex-1 pr-4">
         <Animated.Text 
           className="text-3xl font-bold text-gray-900"
-          entering={Animated.FadeIn.duration(600).springify()}
+           entering={Animated.FadeIn?.duration(600).springify()}
         >
           Hello, {username || 'User'}!
         </Animated.Text>
         <Animated.View
-          entering={Animated.FadeIn.delay(200).duration(600)}
+           entering={Animated.FadeIn?.delay(200).duration(600)}
         >
           <Text className="text-base text-gray-600 mt-1">
             Let's check your

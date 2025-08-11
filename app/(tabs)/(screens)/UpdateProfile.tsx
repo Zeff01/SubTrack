@@ -38,16 +38,21 @@ const UpdateProfileScreen = () => {
     );
   
     
-    const getUsername = async (email : string) => {
-      try {
-        const response =  await getUsernameByEmail(email);
-        if (response.success) {
-          setUsername(response.username);
-        } 
-      } catch (error) {
-        Alert.alert("Error", "An error occurred while logging in.");
-      }
-    };
+  const getUsername = async (email: string) => {
+  try {
+    if (!email) {
+      // throw new Error("No email provided");
+    }
+
+    const response = await getUsernameByEmail(email);
+    if (response) {
+      setUsername(response);
+    }
+  } catch (error) {
+    console.error(error);
+    Alert.alert("Error", "An error occurred while logging in.");
+  }
+};
 
 
 

@@ -20,23 +20,36 @@ export interface AuthResponse {
 }
 
 // Subscription Types
+
 export interface Subscription {
-  id?: string;
-  user_id: string;
+  id: string;
+  uid: string;
   app_name: string;
-  cost: number;
-  cost_type: 'fixed' | 'variable';
-  average_cost?: number; // For variable costs
-  cost_history?: CostHistoryEntry[]; // Track variable cost history
-  cycle: 'weekly' | 'monthly' | 'quarterly' | 'yearly';
+  cost: string;
+  cycle: string;
   due_date: string;
-  reminder: string;
-  color: string;
-  status?: 'active' | 'paused' | 'cancelled';
-  category?: 'entertainment' | 'utilities' | 'productivity' | 'health' | 'education' | 'other';
-  created_at?: string;
-  updated_at?: string;
-}
+  remind_me: string;
+  selected_color: string;
+  updated_at: string;
+  created_at: string;
+};
+// export interface Subscription {
+//   id?: string;
+//   user_id: string;
+//   app_name: string;
+//   cost: number;
+//   cost_type: 'fixed' | 'variable';
+//   average_cost?: number; // For variable costs
+//   cost_history?: CostHistoryEntry[]; // Track variable cost history
+//   cycle: 'weekly' | 'monthly' | 'quarterly' | 'yearly';
+//   due_date: string;
+//   reminder: string;
+//   color: string;
+//   status?: 'active' | 'paused' | 'cancelled';
+//   category?: 'entertainment' | 'utilities' | 'productivity' | 'health' | 'education' | 'other';
+//   created_at?: string;
+//   updated_at?: string;
+// }
 
 export interface CostHistoryEntry {
   date: string;
