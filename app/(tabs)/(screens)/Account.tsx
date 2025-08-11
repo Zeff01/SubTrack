@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 
 import { signOut } from 'firebase/auth';
-import { auth } from "../../../config/firebase.js"; // Assuming db is not needed here
+import { auth } from "../../../config/firebase"; // Assuming db is not needed here
 
 
 const AccountSettingsScreen = () => {

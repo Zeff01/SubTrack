@@ -66,7 +66,7 @@ const UpdateProfileScreen = () => {
          // Alert.alert("Success", response.message);
         } else {
           Alert.alert("Update Profile Failed", response.error);
-          console.log(response.error)
+          // console.log(response.error)
         }
       } catch (error) {
         Alert.alert("Error", "An error occurred.");

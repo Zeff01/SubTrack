@@ -6,8 +6,8 @@ import React, { useState, useCallback } from 'react';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { onAuthStateChanged, User  } from 'firebase/auth';
 
-import { auth } from "../../../config/firebase.js"; // Assuming db is not needed here
-import { retrieveAllDocumentSubscriptionSpecificUser } from "../../../services/userService.js";
+import { auth } from "../../../config/firebase"; // Assuming db is not needed here
+import { retrieveAllDocumentSubscriptionSpecificUser } from "../../../services/userService";
 
 import { formatDueDate } from '../../modules/constants';
 

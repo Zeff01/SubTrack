@@ -133,7 +133,7 @@ const Calendar = () => {
             {/* Button */}
           <View className="mt-6 items-center">
             <TouchableOpacity className="bg-[#3AABCC] rounded-3xl shadow-md w-full h-14 justify-center"
-              onPress={() => (navigation as any).navigate('Plus')}
+              onPress={() => (navigation as any).navigate('AddSubscription')}
             >
               <Text className="text-white font-semibold text-xl text-center">
                  Add Subscription

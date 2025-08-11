@@ -11,7 +11,7 @@ import {
 import { SelectList } from 'react-native-dropdown-select-list';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { useNavigation } from '@react-navigation/native';
-import { createDocumentSubscription } from "../../../services/userService.js";
+import { createDocumentSubscription } from "../../../services/userService";
 import { User } from 'firebase/auth';
 import { useFocusEffect } from '@react-navigation/native';
 import ColorModal from '../../modals/SelectColorModal';
