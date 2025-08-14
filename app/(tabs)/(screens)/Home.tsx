@@ -27,6 +27,8 @@ const HomeScreen = () => {
   const { username } = useUsername(user);
   const { subscriptions, highlightedDays, loading, error, getTotalMonthlyCost, getYearlyStats } = useSubscriptions();
 
+
+  const [currentDateMonth, setCurrentMonth] = useState(moment());
   const [currentDate, setCurrentDate] = useState(moment());
   const [selectedDay, setSelectedDay] = useState<string | null>(moment().format('YYYY-MM-DD'));
   const [currentDay, setCurrentDay] = useState<moment.Moment>(moment());
@@ -35,17 +37,28 @@ const HomeScreen = () => {
   const monthlyCost = getTotalMonthlyCost(highlightedDays);
   const yearlyStats = getYearlyStats(subscriptions);
 
+
+
   // Get subscriptions for selected day
   const selectedDayData = highlightedDays.find(h => h.date === selectedDay);
   const selectedDaySubscriptions = selectedDayData 
     ? subscriptions.filter(sub => selectedDayData.id.includes(sub.id || ''))
     : [];
 
-  // Get upcoming payments
   const upcomingPayments = highlightedDays
-    .filter(day => moment(day.date).isAfter(moment(), 'day'))
-    .sort((a, b) => moment(a.date).diff(moment(b.date)))
-    .slice(0, 3);
+  .filter(day => {
+    const dayMoment = moment(day.date);
+    const now = moment();
+
+    // Future dates in the same month and year as today
+    return (
+      dayMoment.isAfter(now, 'day') &&
+      dayMoment.month() === now.month() &&
+      dayMoment.year() === now.year()
+    );
+  })
+  .sort((a, b) => moment(a.date).diff(moment(b.date)))
+  .slice(0, 8);
 
   const handlePrevMonth = () => {
     setCurrentDate(prev => prev.clone().subtract(1, 'month'));
@@ -94,40 +107,70 @@ const HomeScreen = () => {
            <Header username={username} />
         </FadeInView>
 
+
         {/* Monthly Payment Summary */}
         <SlideInView delay={200} duration={400} direction="up" className="mb-6">
           <MonthlyPayment 
             monthlyCost={monthlyCost} 
             yearlyCost={yearlyStats.total}
             yearlyAverage={yearlyStats.average}
-            currentDate={currentDate} 
+            currentDate={currentDateMonth} 
           />
         </SlideInView>
 
         {/* Upcoming Payments */}
         {upcomingPayments.length > 0 && (
-          <FadeInView delay={400} duration={500} className="mb-6">
-            <Text className="text-lg font-semibold text-gray-900 mb-3">Upcoming Payments</Text>
-            {upcomingPayments.map((payment, index) => {
+        <FadeInView delay={400} duration={500} className="mb-6">
+          <Text className="text-lg font-semibold text-gray-900 mb-3">Upcoming Payments</Text>
+
+          {upcomingPayments.flatMap((payment, parentIndex) => {
+            return payment.id.map((id: string, i: number) => {
+              const appName = payment.app_name[i];
+              const color = payment.colors[i];
+              const cost = parseFloat(payment.cost[i]);
+              const dueDate = payment.due_date[i];
+
               const date = moment(payment.date);
-              const totalCost = payment.cost.reduce((sum, cost) => sum + parseFloat(cost), 0);
-              
+
+              const subscription = {
+                id,
+                app_name: appName,
+                color,
+                cost,
+                due_date: dueDate,
+                date: payment.date,
+              };
+
               return (
-                <SlideInView key={index} delay={500 + (index * 100)} duration={400} direction="right">
+                <SlideInView
+                  key={`${parentIndex}-${i}`}
+                  delay={500 + (parentIndex * 100)}
+                  duration={400}
+                  direction="right"
+                >
                   <UpcomingPayment
                     dayNumber={date.date()}
                     dayName={date.format('ddd')}
-                    subscriptionCount={payment.app_name.length}
-                    totalCost={totalCost}
+                    subscriptionCount={1}
+                    totalCost={cost}
+                    app_name={appName}
+                   //color={color}
                     color="#3AABCC"
-                    onPress={() => handleDayPress(payment.date)}
+                    onPress={() =>
+                      (navigation as any).navigate('Auth', {
+                        screen: 'SubscriptionDetails',
+                        params: { subscription },
+                      })
+                    }
                   />
                 </SlideInView>
               );
-            })}
-          </FadeInView>
-        )}
+            });
+          })}
+        </FadeInView>
+      )}
 
+      
         {/* Calendar */}
         <FadeInView delay={600} duration={500} className="mb-6">
           <CalendarView
@@ -157,7 +200,7 @@ const HomeScreen = () => {
               />
             ))}
           </FadeInView>
-        )}
+        )} 
       </ScrollView>
     </View>
   );

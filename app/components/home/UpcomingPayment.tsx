@@ -4,6 +4,7 @@ import { View, Text, TouchableOpacity } from 'react-native';
 interface UpcomingPaymentProps {
   dayNumber: number;
   dayName: string;
+  app_name: string;
   subscriptionCount: number;
   totalCost: number;
   color: string;
@@ -13,6 +14,7 @@ interface UpcomingPaymentProps {
 const UpcomingPayment: React.FC<UpcomingPaymentProps> = ({
   dayNumber,
   dayName,
+  app_name,
   subscriptionCount,
   totalCost,
   color,
@@ -28,7 +30,8 @@ const UpcomingPayment: React.FC<UpcomingPaymentProps> = ({
         </View>
         <View className="flex-1">
           <Text className="text-gray-900 font-semibold">
-            {subscriptionCount} Subscription{subscriptionCount > 1 ? 's' : ''}
+            {/* {subscriptionCount} Subscription{subscriptionCount > 1 ? 's' : ''} */}
+            {app_name} 
           </Text>
           <Text className="text-gray-600 text-sm">Due on this date</Text>
         </View>

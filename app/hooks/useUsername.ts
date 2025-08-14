@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { getUsernameByEmail } from '../../services/userService';
 import { User } from 'firebase/auth';
 
+
 export const useUsername = (user: User | null) => {
   const [username, setUsername] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -31,3 +32,5 @@ export const useUsername = (user: User | null) => {
 
   return { username, loading };
 };
+
+export default useUsername;

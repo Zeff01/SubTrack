@@ -8,6 +8,7 @@ interface UseSubscriptionFormProps {
   mode: 'add' | 'edit';
 }
 
+
 export const useSubscriptionForm = ({ initialData, onSubmit, mode }: UseSubscriptionFormProps) => {
   const [formData, setFormData] = useState<SubscriptionFormData>({
     app_name: initialData?.app_name || '',
@@ -116,3 +117,5 @@ export const useSubscriptionForm = ({ initialData, onSubmit, mode }: UseSubscrip
     resetForm,
   };
 };
+
+export default useSubscriptionForm;
