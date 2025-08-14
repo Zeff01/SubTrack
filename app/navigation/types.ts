@@ -81,3 +81,5 @@ export type NavigationProp = HomeScreenProps['navigation'] |
   SubscriptionScreenProps['navigation'] | 
   AccountScreenProps['navigation'] |
   AuthStackScreenProps<any>['navigation'];
+
+export default {};

@@ -9,6 +9,7 @@ import Animated, {
   useSharedValue,
   withSpring,
   interpolate,
+  SlideInRight,
 } from 'react-native-reanimated';
 
 interface SubscriptionItemProps {
@@ -38,16 +39,16 @@ const SubscriptionItem: React.FC<SubscriptionItemProps> = ({
     };
   });
 
-  const getCategoryIcon = () => {
-    switch (subscription.category) {
-      case 'entertainment': return '🎬';
-      case 'utilities': return '💡';
-      case 'productivity': return '💼';
-      case 'health': return '🏃';
-      case 'education': return '📚';
-      default: return '📦';
-    }
-  };
+  // const getCategoryIcon = () => {
+  //   switch (subscription.category) {
+  //     case 'entertainment': return '🎬';
+  //     case 'utilities': return '💡';
+  //     case 'productivity': return '💼';
+  //     case 'health': return '🏃';
+  //     case 'education': return '📚';
+  //     default: return '📦';
+  //   }
+  // };
 
   const displayCost = subscription.cost_type === 'variable' 
     ? `~₱${subscription.average_cost || subscription.cost}`
@@ -55,7 +56,8 @@ const SubscriptionItem: React.FC<SubscriptionItemProps> = ({
 
   return (
     <Animated.View
-      entering={Animated.SlideInRight.delay(index * 100).springify()}
+     // entering={Animated.SlideInRight.delay(index * 100).springify()}
+      entering={SlideInRight.delay(index * 100).springify()}
     >
       <ScaleButton
         onPress={onPress}
@@ -64,13 +66,13 @@ const SubscriptionItem: React.FC<SubscriptionItemProps> = ({
       >
         <Animated.View
           className="py-6 px-4 flex-row justify-between items-center rounded-3xl shadow-xl"
-          style={[{ backgroundColor: subscription.color }, animatedStyle]}
+          style={[{ backgroundColor: subscription.selected_color }, animatedStyle]}
         >
           <View className="flex justify-center items-center min-h-16">
-            <View className="bg-white/20 rounded-full h-14 w-14 shadow-xl items-center justify-center">
-              <Text className="text-2xl">{getCategoryIcon()}</Text>
+            <View className="bg-white/20 rounded-full h-14 w-14  items-center justify-center">
+              {/* <Text className="text-2xl">{getCategoryIcon()}</Text>  */}
             </View>
-          </View>
+          </View> 
           
           <View className="min-h-16 max-w-52 min-w-52 flex justify-center items-start">
             <Text
@@ -86,7 +88,8 @@ const SubscriptionItem: React.FC<SubscriptionItemProps> = ({
               ellipsizeMode="tail"
             >
               {subscription.cycle.charAt(0).toUpperCase() + subscription.cycle.slice(1)}
-              {subscription.cost_type === 'variable' && ' • Variable'}
+              {/* {subscription.cost_type === 'variable' && ' • Variable'} */}
+              
             </Text>
           </View>
           

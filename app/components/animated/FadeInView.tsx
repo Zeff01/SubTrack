@@ -33,3 +33,5 @@ export const FadeInView: React.FC<FadeInViewProps> = ({
     </Animated.View>
   );
 };
+
+export default FadeInView;

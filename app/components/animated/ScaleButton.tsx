@@ -17,7 +17,6 @@ interface ScaleButtonProps extends TouchableOpacityProps {
   children: React.ReactNode;
   scaleTo?: number;
 }
-
 export const ScaleButton: React.FC<ScaleButtonProps> = ({
   children,
   onPressIn,
@@ -60,3 +59,5 @@ export const ScaleButton: React.FC<ScaleButtonProps> = ({
     </AnimatedTouchable>
   );
 };
+
+export default ScaleButton;

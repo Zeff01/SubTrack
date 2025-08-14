@@ -57,3 +57,5 @@ export const SlideInView: React.FC<SlideInViewProps> = ({
     </Animated.View>
   );
 };
+
+export default SlideInView;

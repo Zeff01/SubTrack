@@ -132,8 +132,8 @@ const updatedSubscriptions = useMemo(() => {
     const getUsername = async (email : string) => {
       try {
         const response =  await getUsernameByEmail(email);
-        if (response.success) {
-          setUsername(response.username);
+        if (response) {
+          setUsername(response);
         } 
       } catch (error) {
         Alert.alert("Error", "An error occurred while logging in.");
@@ -372,7 +372,7 @@ function formatEntryDate(dateStr: string): string {
             </ScrollView>
         </View>
 
-        <ScrollView className="flex-1 bg-white">
+        <ScrollView className="flex-1 bg-white"> 
               <View className="pt-2 pb-6 px-3 flex-row justify-between items-center">
                 <View className="flex items-start justify-start">
                   <Text className="text-2xl font-semibold text-center flex-1">{currentDate.format('MMMM YYYY')}</Text>
@@ -381,7 +381,7 @@ function formatEntryDate(dateStr: string): string {
                   </Text>
                 </View>
         
-              <View className="flex-row items-center justify-between">
+                <View className="flex-row items-center justify-between">
                   <TouchableOpacity onPress={() => setCurrentDate(m => m.clone().subtract(1, 'month'))}>
                     <Ionicons className="mr-6" name="chevron-back" size={24} color="black" />
                   </TouchableOpacity>
