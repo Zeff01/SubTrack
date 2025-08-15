@@ -18,19 +18,18 @@ const RootStack = () => {
   //   return <LoginScreen />;
   // } 
 
+  // Show loading screen while checking auth status
+  if (authLoading) {
+    return null; // You could add a loading component here
+  }
+
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="Auth" component={AuthNavigator} />
+      {user ? (
         <Stack.Screen name="App" component={AppNavigator} />
-      {/* {!user || authLoading == false ? (
-          <>
-            <Stack.Screen name="App" component={AppNavigator} />
-          </>
       ) : (
-          <>
-            <Stack.Screen name="Auth" component={AuthNavigator} />
-          </>
-      )} */}
+        <Stack.Screen name="Auth" component={AuthNavigator} />
+      )}
     </Stack.Navigator>
   );
 };

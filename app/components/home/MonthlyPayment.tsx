@@ -5,7 +5,6 @@ import Animated, {
   useAnimatedStyle, 
   useSharedValue, 
   withTiming,
-  interpolate,
   useAnimatedProps,
 } from 'react-native-reanimated';
 import { useEffect } from 'react';
@@ -28,7 +27,7 @@ const MonthlyPayment: React.FC<MonthlyPaymentProps> = ({
   const animatedValue = useSharedValue(0);
 
   useEffect(() => {
-    animatedValue.value = withTiming(monthlyCost, { duration: 1000 });
+    animatedValue.value = withTiming(monthlyCost, { duration: 600 });
   }, [monthlyCost]);
 
   const animatedProps = useAnimatedProps(() => {
@@ -38,35 +37,37 @@ const MonthlyPayment: React.FC<MonthlyPaymentProps> = ({
   });
 
   return (
-    <View className="bg-white p-6 rounded-3xl shadow-md">
+    <View className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
       <View className="flex-row justify-between items-center mb-4">
         <View className="flex-1">
-          <Text className="text-base font-medium text-gray-600">This Month</Text>
-          <Text className="text-3xl font-bold text-gray-900 mt-1">
+          <Text className="text-sm font-medium text-gray-500">This Month</Text>
+          <Text className="text-2xl font-bold text-gray-900 mt-1">
             ₱{monthlyCost.toFixed(2)}
           </Text>
-          <Text className="text-sm text-gray-500 mt-1">
+          <Text className="text-xs text-gray-400 mt-1">
             {currentDate.format('MMMM YYYY')}
           </Text>
         </View>
-        <View className="bg-blue-100 p-3 rounded-full">
-          <Text className="text-2xl">💰</Text>
+        <View className="bg-[#3AABCC]/10 p-3 rounded-xl">
+          <Text className="text-xl">💵</Text>
         </View>
       </View>
       
       {/* Yearly Stats */}
-      <View className="border-t border-gray-200 pt-4 flex-row justify-between">
-        <View className="flex-1">
-          <Text className="text-xs text-gray-500">Yearly Total</Text>
-          <Text className="text-lg font-semibold text-gray-800 mt-1">
-            ₱{yearlyCost?.toFixed(2)}
-          </Text>
-        </View>
-        <View className="flex-1 ml-4">
-          <Text className="text-xs text-gray-500">Monthly Average</Text>
-          <Text className="text-lg font-semibold text-gray-800 mt-1">
-            ₱{yearlyAverage?.toFixed(2)}
-          </Text>
+      <View className="bg-gray-50 -mx-5 -mb-5 px-5 py-4 rounded-b-2xl mt-3">
+        <View className="flex-row justify-between">
+          <View className="flex-1">
+            <Text className="text-xs text-gray-500">Yearly Total</Text>
+            <Text className="text-base font-semibold text-gray-800 mt-0.5">
+              ₱{yearlyCost?.toFixed(2)}
+            </Text>
+          </View>
+          <View className="flex-1 items-end">
+            <Text className="text-xs text-gray-500">Monthly Average</Text>
+            <Text className="text-base font-semibold text-gray-800 mt-0.5">
+              ₱{yearlyAverage?.toFixed(2)}
+            </Text>
+          </View>
         </View>
       </View>
     </View>

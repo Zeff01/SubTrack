@@ -13,6 +13,7 @@ interface HighlightedDay {
   cost: string[];
   app_name: string[];
   due_date: string[];
+  icons?: string[];
 }
 
 export const useSubscriptions = () => {
@@ -31,6 +32,7 @@ export const useSubscriptions = () => {
         app_name: string[];
         cost: string[];
         due_date: string[];
+        icons: string[];
       }
     >();
   
@@ -61,23 +63,47 @@ export const useSubscriptions = () => {
           app_name: [],
           cost: [],
           due_date: [],
+          icons: [],
         });
       }
       const entry = daysMap.get(key)!;
       //entry.colors.add(sub.selected_color);
-      entry.colors.push(sub.selected_color);
-      entry.id.push(sub.id);
+      entry.colors.push(sub.selected_color || sub.color || '#3AABCC');
+      entry.id.push(sub.id || '');
       entry.app_name.push(sub.app_name);
       entry.cost.push(sub.cost);
       entry.due_date.push(sub.due_date);
+      entry.icons?.push(sub.icon || '');
     };
   
     subscriptions.forEach((sub) => {
-      const baseDate = moment(sub.due_date, 'MM/DD/YYYY');
-      const cycle = sub.cycle.toLowerCase();
+      // Handle both DD/MM/YYYY and MM/DD/YYYY formats
+      let baseDate = moment(sub.due_date, 'DD/MM/YYYY');
+      if (!baseDate.isValid()) {
+        baseDate = moment(sub.due_date, 'MM/DD/YYYY');
+      }
+      
+      // Handle cycle as number (from old data) or string
+      let cycleString = sub.cycle;
+      
+      // If it's a number like "2" or 2, map it to the string value
+      const cycleMap2: { [key: string]: string } = {
+        '1': 'weekly',
+        '2': 'monthly', 
+        '3': 'quarterly',
+        '4': 'yearly'
+      };
+      
+      if (cycleMap2[String(cycleString)]) {
+        cycleString = cycleMap2[String(cycleString)];
+      }
+      
+      const cycle = cycleString.toLowerCase();
       const config = cycleMap[cycle];
   
-      if (!baseDate.isValid()) return;
+      if (!baseDate.isValid()) {
+        return;
+      }
   
       if (cycle === 'semimonthly') {
         let current = startDate.clone().startOf('month');
@@ -99,7 +125,9 @@ export const useSubscriptions = () => {
         return;
       }
   
-      if (!config) return;
+      if (!config) {
+        return;
+      }
   
       let current = baseDate.clone();
       const { unit, step } = config;
@@ -117,25 +145,20 @@ export const useSubscriptions = () => {
     });
   
     // Convert map to array
-    const result: {
-      date: string;
-      colors: string[];
-      id: string[];
-      app_name: string[];
-      cost: string[];
-      due_date: string[];
-    }[] = [];
+    const result: HighlightedDay[] = [];
   
     daysMap.forEach((value, date) => {
       result.push({
         date,
-        colors: Array.from(value.colors),
+        colors: value.colors,
         id: value.id,
         app_name: value.app_name,
         cost: value.cost,
         due_date: value.due_date,
+        icons: value.icons,
       });
     });
+    
   
     return result;
   };

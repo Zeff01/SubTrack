@@ -43,6 +43,7 @@
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "react-native": "0.79.5",
+    "react-native-animatable": "^1.4.0",
     "react-native-color-picker": "^0.6.0",
     "react-native-date-picker": "^5.0.13",
     "react-native-dropdown-select-list": "^2.0.5",

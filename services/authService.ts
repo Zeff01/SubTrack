@@ -117,6 +117,17 @@ export const registerUser = async (user_info: RegisterInfo): Promise<AuthRespons
 
 export const loginUser = async ({ email, password }: LoginInfo): Promise<AuthResponse> => {
   try {
+    // Debug log to see what's received
+    console.log('authService received:', { email, password: !!password });
+    
+    // Validate inputs before sending to Firebase
+    if (!email || !email.trim()) {
+      throw new Error('Email is required');
+    }
+    if (!password) {
+      throw new Error('Password is required');
+    }
+    
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     return { 
         success: true, 
@@ -124,7 +135,7 @@ export const loginUser = async ({ email, password }: LoginInfo): Promise<AuthRes
         data: userCredential.user 
     };
   } catch (error: any) {
-      // console.log(error)
+    console.log('Firebase auth error:', error);
     return {
         success: false,
         error: error.message || "Login failed due to a network or server error.",

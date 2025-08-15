@@ -22,16 +22,25 @@ export interface AuthResponse {
 // Subscription Types
 
 export interface Subscription {
-  id: string;
-  uid: string;
+  id?: string;
+  user_id: string;
+  uid?: string; // Keep for backward compatibility
   app_name: string;
   cost: string;
+  cost_type?: 'fixed' | 'variable';
+  average_cost?: string;
   cycle: string;
   due_date: string;
-  remind_me: string;
-  selected_color: string;
-  updated_at: string;
-  created_at: string;
+  reminder: string;
+  remind_me?: string; // Keep for backward compatibility
+  color: string;
+  selected_color?: string; // Keep for backward compatibility
+  category?: string;
+  icon?: string;
+  notes?: string;
+  status?: 'active' | 'paused' | 'cancelled';
+  updated_at?: string;
+  created_at?: string;
 };
 // export interface Subscription {
 //   id?: string;
@@ -82,6 +91,9 @@ export interface SubscriptionFormData {
   reminder: string;
   color: string;
   category?: string;
+  icon?: string;
+  notes?: string;
+  status?: 'active' | 'paused' | 'cancelled';
 }
 
 // Navigation Types

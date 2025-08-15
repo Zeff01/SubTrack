@@ -7,8 +7,8 @@ import SubscriptionStack from '../(tabs)/SubscriptionStack';
 import AccountStack from '../(tabs)/AccountStack';
 
 // import Calendar from './Calendar';
-// import Plus from './(screens)/AddSubscription';
-// import PlusButton from '../components/PlusButton';
+import Plus from '../(tabs)/(screens)/AddSubscription';
+import PlusButton from '../components/PlusButton';
 
 import LoginScreen from '../(screens)/Login';
 import { useAuth } from '../providers/AuthProvider'; // Import your AuthProvider
@@ -55,8 +55,6 @@ const TabNavigator = () => {
             case 'Account':
               iconName = focused ? 'person' : 'person-outline';
               break;
-            case 'Plus':
-              return null; // Custom button handles icon
           }
           return <Ionicons name={iconName} size={24} color={color} />;
         },

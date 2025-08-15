@@ -161,7 +161,6 @@ export const checkIfEmailExists = async (email: string): Promise<boolean> => {
 
     return !querySnapshot.empty;
   } catch (error) {
-    console.error("Error checking email existence:", error);
     return false;
   }
 };
@@ -172,7 +171,6 @@ export const checkIfUsernameExists = async (username: string): Promise<boolean> 
     const querySnapshot = await getDocs(q);
     return !querySnapshot.empty;
   } catch (error) {
-    console.error("Error checking username existence:", error);
     return false;
   }
 };
@@ -193,7 +191,6 @@ export const getUsernameByEmail = async (email: string): Promise<string | null> 
 
     return null;
   } catch (error) {
-    // console.error("Error getting username by email:", error);
     return null;
   }
 };

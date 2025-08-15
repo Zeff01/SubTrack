@@ -1,21 +1,20 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-import TabNavigator from './TabNavigator';
+import Login from '../(screens)/Login';
+import Register from '../(screens)/Register';
+import AccountRecovery from '../(screens)/AccountRecovery';
 
-import SubscriptionDetails from '../(tabs)/(screens)/SubscriptionDetails'; 
-import EditSubscription from '../(tabs)/(screens)/EditSubscription'; 
+const AuthStack = createNativeStackNavigator();
 
-const RootStack = () => {
-  const Stack = createNativeStackNavigator();
-
+const AuthNavigator = () => {
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="MainTabs" component={TabNavigator} />
-      <Stack.Screen name="SubscriptionDetails" component={SubscriptionDetails} />
-      <Stack.Screen name="EditSubscription" component={EditSubscription} />
-    </Stack.Navigator>
+    <AuthStack.Navigator screenOptions={{ headerShown: false }}>
+      <AuthStack.Screen name="Login" component={Login} />
+      <AuthStack.Screen name="Register" component={Register} />
+      <AuthStack.Screen name="AccountRecovery" component={AccountRecovery} />
+    </AuthStack.Navigator>
   );
 };
 
-export default RootStack;
+export default AuthNavigator;
