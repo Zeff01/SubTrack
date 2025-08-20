@@ -118,7 +118,7 @@ export const registerUser = async (user_info: RegisterInfo): Promise<AuthRespons
 export const loginUser = async ({ email, password }: LoginInfo): Promise<AuthResponse> => {
   try {
     // Debug log to see what's received
-    console.log('authService received:', { email, password: !!password });
+    //console.log('authService received:', { email, password: !!password });
     
     // Validate inputs before sending to Firebase
     if (!email || !email.trim()) {

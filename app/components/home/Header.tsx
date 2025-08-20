@@ -1,16 +1,18 @@
-import React, { useEffect } from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import { useNavigation } from '@react-navigation/native';
+import React, { useEffect } from "react";
+import { View, Text } from "react-native";
+import Ionicons from "react-native-vector-icons/Ionicons";
+import { useNavigation } from "@react-navigation/native";
 import Animated, {
+  FadeIn,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
   withRepeat,
   withSequence,
   withTiming,
-} from 'react-native-reanimated';
-import { ScaleButton } from '../animated/ScaleButton';
+} from "react-native-reanimated";
+import { ScaleButton } from "../animated/ScaleButton";
+import { useTheme } from "../../providers/ThemeProvider";
 
 interface HeaderProps {
   username: string | null;
@@ -22,6 +24,9 @@ const Header: React.FC<HeaderProps> = ({ username }) => {
   const navigation = useNavigation();
   const bellRotation = useSharedValue(0);
   const bellScale = useSharedValue(1);
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+
 
   useEffect(() => {
     // Subtle bell animation
@@ -42,44 +47,54 @@ const Header: React.FC<HeaderProps> = ({ username }) => {
   const bellStyle = useAnimatedStyle(() => ({
     transform: [
       { rotate: `${bellRotation.value}deg` },
-      { scale: bellScale.value }
+      { scale: bellScale.value },
     ],
   }));
 
   const handleNotificationPress = () => {
-    bellScale.value = withSequence(
-      withSpring(1.2),
-      withSpring(1)
-    );
-    console.log(123);
-    // (navigation as any).navigate('Auth', { screen: 'Notification' });
-    (navigation as any).navigate('Home', { screen: 'notification' })
+    bellScale.value = withSequence(withSpring(1.2), withSpring(1));
+    (navigation as any).navigate("Home", { screen: "notification" });
   };
 
   return (
     <View className="flex-row items-center justify-between">
+      {/* Greeting */}
       <View className="flex-1 pr-4">
-        <Animated.Text 
-          className="text-3xl font-bold text-gray-900"
-           entering={Animated.FadeIn?.duration(600).springify()}
+        <Animated.Text
+          className={`text-3xl font-bold ${
+            isDark ? "text-white" : "text-gray-900"
+          }`}
+          entering={FadeIn.duration(600).springify()}
         >
-          Hello, {username || 'User'}!
+          Hello, {username || "User"}!
         </Animated.Text>
-        <Animated.View
-           entering={Animated.FadeIn?.delay(200).duration(600)}
-        >
-          <Text className="text-base text-gray-600 mt-1">
+
+        <Animated.View entering={FadeIn.delay(200).duration(600)}>
+          <Text
+            className={`text-base mt-1 ${
+              isDark ? "text-gray-100" : "text-gray-600"
+            }`}
+          >
             Let's check your
           </Text>
-          <Text className="text-base text-gray-600">subscriptions today!</Text>
+          <Text
+            className={`text-base ${
+              isDark ? "text-gray-100" : "text-gray-600"
+            }`}
+          >
+            subscriptions today!
+          </Text>
         </Animated.View>
       </View>
-      <ScaleButton
-        onPress={handleNotificationPress}
-        className="p-2"
-      >
+
+      {/* Notification Bell */}
+      <ScaleButton onPress={handleNotificationPress} className="p-2">
         <Animated.View style={bellStyle}>
-          <AnimatedIcon name="notifications-outline" size={30} color="#3AABCC" />
+          <AnimatedIcon
+            name="notifications-outline"
+            size={30}
+            color={isDark ? "#38BDF8" : "#3AABCC"} // cyan-400 in dark, brand in light
+          />
         </Animated.View>
       </ScaleButton>
     </View>

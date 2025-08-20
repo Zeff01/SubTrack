@@ -6,19 +6,21 @@ import {
   ScrollView,
   TouchableOpacity,
   KeyboardAvoidingView,
-  Alert
+  Alert,
+  Platform,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
 import { useNavigation } from '@react-navigation/native';
-import { ProfileForm } from '../../../types/ProfileFormType'; // Adjust path as needed
+import { ProfileForm } from '../../../types/ProfileFormType';
 import { changeProfile } from '../../../services/authService';
-import { useAuth } from '../../providers/AuthProvider'; // Import your AuthProvider
+import { useAuth } from '../../providers/AuthProvider';
 import { useFocusEffect } from '@react-navigation/native';
 import { getUsernameByEmail } from "../../../services/userService";
 import { User } from 'firebase/auth';
-
-
+import { useTheme } from '../../providers/ThemeProvider';
+import { FadeInView } from '../../components/animated/FadeInView';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const UpdateProfileScreen = () => {
   const navigation = useNavigation();
@@ -26,121 +28,112 @@ const UpdateProfileScreen = () => {
   const { user, authLoading } = authContext;
   const [username, setUsername] = useState<string | null>('');
   const [email, setEmail] = useState<string | null>('');
-  const [userData, setUserData] =  useState<User | null>(null); // ✅ Allow User or null
-  
+  const [userData, setUserData] = useState<User | null>(null);
+  const { theme } = useTheme();
 
-    useFocusEffect(
-        useCallback(() => {
-            setUserData(user);
-            getUsername(userData?.email as string);
-            setEmail(userData?.email as string);
-        }, [authLoading, user, userData])
-    );
-  
-    
+  const isDark = theme === 'dark';
+
+  useFocusEffect(
+    useCallback(() => {
+      setUserData(user);
+      getUsername(user?.email || '');
+      setEmail(user?.email || '');
+    }, [user])
+  );
+
   const getUsername = async (email: string) => {
-  try {
-    if (!email) {
-      // throw new Error("No email provided");
+    try {
+      if (!email) return;
+      const response = await getUsernameByEmail(email);
+      if (response) setUsername(response);
+    } catch (error) {
+      console.error(error);
+      Alert.alert("Error", "An error occurred while retrieving username.");
     }
-
-    const response = await getUsernameByEmail(email);
-    if (response) {
-      setUsername(response);
-    }
-  } catch (error) {
-    console.error(error);
-    Alert.alert("Error", "An error occurred while logging in.");
-  }
-};
-
-
+  };
 
   const handleSave = async () => {
-      if (email == "" || username == "") {
-        Alert.alert("Validation", "Please fill in all fields");
-        return;
-      }
-  
-      try {
-        const user_info = { email: email, username: username }; // shorthand for object properties
-        const response = await changeProfile(user, user_info); // Call your Firebase update method
+    if (!email || !username) {
+      Alert.alert("Validation", "Please fill in all fields");
+      return;
+    }
 
-        if (response.success) {
-          Alert.alert("Success", JSON.stringify(user_info, null, 2)); 
-         // Alert.alert("Success", response.message);
-        } else {
-          Alert.alert("Update Profile Failed", response.error);
-          // console.log(response.error)
-        }
-      } catch (error) {
-        Alert.alert("Error", "An error occurred.");
+    try {
+      const user_info = { email, username };
+      const response = await changeProfile(user, user_info);
+
+      if (response.success) {
+        Alert.alert("Success", "Profile updated successfully.");
+      } else {
+        Alert.alert("Update Failed", response.error || "Unknown error");
       }
-    };
+    } catch (error) {
+      Alert.alert("Error", "An error occurred.");
+    }
+  };
 
   return (
-    <>
-    <View className="flex-1 bg-white">
-    <View className="pt-12 pb-6 px-6 bg-[#D9D9D9] rounded-b-3xl">
-          <View className="relative items-center justify-center">
-            <TouchableOpacity
-              onPress={() => navigation.goBack()}
-              className="absolute left-0 px-4"
-            >
-              <Ionicons name="chevron-back" size={25} color="black" />
-            </TouchableOpacity>
-            <Text className="text-xl font-semibold text-gray-800">
-               Update Profile
-            </Text>
-          </View>
-        </View>
-
-     <KeyboardAvoidingView
-      behavior={'padding'}
-     // className="flex-1 bg-[#3AABCC] justify-center px-6"
+    <SafeAreaView
+      className={`flex-1 ${isDark ? 'bg-[#18181B]' : 'bg-gray-50'}`}
+      edges={['top']}
     >
-    <ScrollView className="bg-white px-4 py-6">
-      {/* Form */}
-  
-      <View className="bg-white rounded-2xl p-6 shadow-md">
-        {/* First Name */}
-        <View className="mb-4">
-          <Text className="text-gray-700 mb-1">Username</Text>
-          <TextInput
-            className="border border-gray-200 p-3 rounded-lg bg-gray-50"
-            placeholder="username"
-            value={username || ''} // fallback for null
-            onChangeText={(text) => setUsername(text)}
-          />
-        </View>
-
-
-
-        {/* Email */}
-        <View className="mb-4">
-          <Text className="text-gray-700 mb-1">Email Address</Text>
-          <TextInput
-            className="border border-gray-200 p-3 rounded-lg bg-gray-50"
-            placeholder="test@gmail.com"
-            keyboardType="email-address"
-            editable={false} // <- makes it read-only
-            value={email || ''} // fallback for null
-            onChangeText={(text) => setEmail(text)}          />
-        </View>
-
-
-        {/* Save Button */}
-        <TouchableOpacity
-          onPress={handleSave}
-          className="bg-blue-600 py-3 rounded-lg mt-4 shadow-sm"
-        >
-          <Text className="text-white font-bold text-center">Save Changes</Text>
-        </TouchableOpacity>
+      <View className={`flex-1 justify-center items-center min-h-10 max-h-14 px-6 shadow-sm ${theme === 'dark' ? 'bg-[#27272A]' : 'bg-white'}`}>
+              <FadeInView duration={300}>
+                <Text className={`text-2xl font-bold text-center ${theme === 'dark' ? 'text-zinc-200' : 'text-gray-900'}`}>
+                  Update Profile
+                </Text>
+              </FadeInView>
       </View>
-    </ScrollView>
-    </KeyboardAvoidingView>
-    </View>
-  </>
+
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        className="flex-1"
+      >
+        <ScrollView
+          className={`flex-1 px-4 py-6 ${isDark ? 'bg-[#18181B]' : 'bg-gray-50'}`}
+          contentContainerStyle={{ paddingBottom: 20 }}
+        >
+          <View className={`rounded-2xl p-6 shadow-sm border ${isDark ? 'bg-[#27272A] border-[#3F3F46]' : 'bg-white border-gray-100'}`}>
+            {/* Username Field */}
+            <View className="mb-4">
+              <Text className={`mb-1 font-medium ${isDark ? 'text-zinc-200' : 'text-gray-700'}`}>
+                Username
+              </Text>
+              <TextInput
+                className={`p-3 rounded-lg ${isDark ? 'bg-[#1F2937] text-white border border-[#3F3F46]' : 'bg-gray-50 border border-gray-200 text-gray-900'}`}
+                placeholder="Username"
+                placeholderTextColor={isDark ? '#9CA3AF' : '#6B7280'}
+                value={username || ''}
+                onChangeText={setUsername}
+              />
+            </View>
+
+            {/* Email Field (Read-only) */}
+            <View className="mb-4">
+              <Text className={`mb-1 font-medium ${isDark ? 'text-zinc-200' : 'text-gray-700'}`}>
+                Email Address
+              </Text>
+              <TextInput
+                className={`p-3 rounded-lg ${isDark ? 'bg-[#1F2937] text-white border border-[#3F3F46]' : 'bg-gray-50 border border-gray-200 text-gray-900'}`}
+                placeholder="Email"
+                placeholderTextColor={isDark ? '#9CA3AF' : '#6B7280'}
+                keyboardType="email-address"
+                editable={false}
+                value={email || ''}
+              />
+            </View>
+
+            {/* Save Button */}
+            <TouchableOpacity
+              onPress={handleSave}
+              className="bg-blue-600 py-3 rounded-lg mt-4 shadow-sm"
+            >
+              <Text className="text-white font-bold text-center">Save Changes</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 };
 

@@ -6,39 +6,44 @@ import HomeStack from '../(tabs)/HomeStack';
 import SubscriptionStack from '../(tabs)/SubscriptionStack';
 import AccountStack from '../(tabs)/AccountStack';
 
-// import Calendar from './Calendar';
 import Plus from '../(tabs)/(screens)/AddSubscription';
 import PlusButton from '../components/PlusButton';
 
 import LoginScreen from '../(screens)/Login';
-import { useAuth } from '../providers/AuthProvider'; // Import your AuthProvider
-
+import { useAuth } from '../providers/AuthProvider';
+import { useTheme } from '../providers/ThemeProvider';
 
 const TabNavigator = () => {
   const authContext = useAuth();
   const Tab = createBottomTabNavigator();
   const { user, authLoading } = authContext;
+  const { theme } = useTheme(); // 'light' or 'dark'
 
-  // If user does not exist
-  if (!user && authLoading == false) {
+  const isDarkMode = theme === 'dark';
+
+  if (!user && authLoading === false) {
     return <LoginScreen />;
   }
-  
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarShowLabel: true,
-        tabBarActiveTintColor: '#3AABCC',
-        tabBarInactiveTintColor: '#9ca3af',
+        tabBarActiveTintColor: isDarkMode ? '#ffffff' : '#3AABCC', // Teal for dark, sky blue for light
+        tabBarInactiveTintColor: isDarkMode ? '#A0AEC0' : '#9ca3af', // Gray
         tabBarLabelStyle: {
           fontSize: 10,
           paddingBottom: 4,
         },
         tabBarStyle: {
-          backgroundColor: '#fff',
+         // backgroundColor: isDarkMode ? '#1F2937' : '#ffffff', // Dark gray or white
+          backgroundColor: isDarkMode ? '#18181B' : '#F9FAFB', // Matches AccountSettingsScreen
           height: 100,
-          borderTopColor: '#e5e7eb',
+          borderTopColor: isDarkMode ? 'transparent' : 'transparent', // Border color based on theme
+          borderTopWidth: 0,          // ✅ Removes the actual border
+          elevation: 0,               // ✅ Removes shadow on Android
+          shadowOpacity: 0,           // ✅ Removes shadow on iOS
         },
         tabBarIcon: ({ color, focused }) => {
           let iconName = '';
@@ -60,20 +65,21 @@ const TabNavigator = () => {
         },
       })}
     >
-      <Tab.Screen 
-      name="Home" 
-      component={HomeStack}
-      listeners={({ navigation }) => ({
+      <Tab.Screen
+        name="Home"
+        component={HomeStack}
+        listeners={({ navigation }) => ({
           tabPress: (e) => {
-            e.preventDefault(); // Prevent default behavior
+            e.preventDefault();
             navigation.navigate('Home', {
-              screen: 'home', // 👈 Navigate to this nested screen
+              screen: 'home',
             });
           },
         })}
       />
-       {/* <Tab.Screen name="Calendar" component={Calendar} /> */}
-      {/*<Tab.Screen
+
+      {/* Optional Plus Button - uncomment if needed */}
+      {/* <Tab.Screen
         name="Plus"
         component={Plus}
         options={{
@@ -83,23 +89,34 @@ const TabNavigator = () => {
           ),
         }}
       /> */}
-      
-      <Tab.Screen 
-        name="Subscriptions" 
-        component={SubscriptionStack} 
+
+      <Tab.Screen
+        name="Subscriptions"
+        component={SubscriptionStack}
         listeners={({ navigation }) => ({
           tabPress: (e) => {
-            e.preventDefault(); // Prevent default behavior
+            e.preventDefault();
             navigation.navigate('Subscriptions', {
-              screen: 'subscriptions', // 👈 Navigate to this nested screen
+              screen: 'subscriptions',
             });
           },
         })}
       />
-      <Tab.Screen name="Account" component={AccountStack} />
+
+      <Tab.Screen
+        name="Account"
+        component={AccountStack}
+        listeners={({ navigation }) => ({
+          tabPress: (e) => {
+            e.preventDefault();
+            navigation.navigate('Account', {
+              screen: 'account_settings',
+            });
+          },
+        })}
+      />
     </Tab.Navigator>
   );
 };
 
 export default TabNavigator;
-                                                    

@@ -8,30 +8,21 @@ import { Slot } from 'expo-router';
 
 import RootNavigator from './navigators/RootNavigator';
 import AuthProvider from './providers/AuthProvider';
+import ThemeProvider from './providers/ThemeProvider';
+
 
 
 export default function App() {
 
   return (
         <>
-            <AuthProvider>
-              {/* <Slot />  */}
-              <RootNavigator />
-              {/* <StatusBar style="auto" /> */}
-            </AuthProvider>
+            <ThemeProvider>
+              <AuthProvider>
+                {/* <Slot />  */}
+                <RootNavigator />
+                {/* <StatusBar style="auto" /> */}
+              </AuthProvider>
+            </ThemeProvider>
         </>
   );
 }
-
-
-// export default function App() {
-//   return (
-//     <NavigationContainer>
-//         <>
-//             <RootStack />
-//             <StatusBar style="auto" />
-//         </>
-
-//     </NavigationContainer>
-//   );
-// }

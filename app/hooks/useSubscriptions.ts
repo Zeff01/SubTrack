@@ -1,16 +1,18 @@
-import { useState, useCallback } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import { onAuthStateChanged } from 'firebase/auth';
+import moment from 'moment';
+import { useCallback, useState } from 'react';
 import { auth } from '../../config/firebase';
 import { retrieveAllDocumentSubscriptionSpecificUser } from '../../services/userService';
 import { Subscription } from '../../types';
-import moment from 'moment';
 
 interface HighlightedDay {
   date: string;
   colors: string[];
   id: string[];
   cost: string[];
+  average_cost: string[];
+  cost_type: string[];
   app_name: string[];
   due_date: string[];
   icons?: string[];
@@ -33,6 +35,8 @@ export const useSubscriptions = () => {
         cost: string[];
         due_date: string[];
         icons: string[];
+        average_cost: string[];
+        cost_type: string[];
       }
     >();
   
@@ -64,46 +68,28 @@ export const useSubscriptions = () => {
           cost: [],
           due_date: [],
           icons: [],
+          average_cost: [],
+          cost_type: [],
         });
       }
       const entry = daysMap.get(key)!;
       //entry.colors.add(sub.selected_color);
-      entry.colors.push(sub.selected_color || sub.color || '#3AABCC');
+      entry.colors.push(sub.color);
       entry.id.push(sub.id || '');
       entry.app_name.push(sub.app_name);
       entry.cost.push(sub.cost);
       entry.due_date.push(sub.due_date);
       entry.icons?.push(sub.icon || '');
+      entry.average_cost.push(sub.average_cost || '');
+      entry.cost_type?.push(sub.cost_type || '');
     };
   
     subscriptions.forEach((sub) => {
-      // Handle both DD/MM/YYYY and MM/DD/YYYY formats
-      let baseDate = moment(sub.due_date, 'DD/MM/YYYY');
-      if (!baseDate.isValid()) {
-        baseDate = moment(sub.due_date, 'MM/DD/YYYY');
-      }
-      
-      // Handle cycle as number (from old data) or string
-      let cycleString = sub.cycle;
-      
-      // If it's a number like "2" or 2, map it to the string value
-      const cycleMap2: { [key: string]: string } = {
-        '1': 'weekly',
-        '2': 'monthly', 
-        '3': 'quarterly',
-        '4': 'yearly'
-      };
-      
-      if (cycleMap2[String(cycleString)]) {
-        cycleString = cycleMap2[String(cycleString)];
-      }
-      
-      const cycle = cycleString.toLowerCase();
+      const baseDate = moment(sub.due_date, 'MM/DD/YYYY');
+      const cycle = sub.cycle.toLowerCase();
       const config = cycleMap[cycle];
   
-      if (!baseDate.isValid()) {
-        return;
-      }
+      if (!baseDate.isValid()) return;
   
       if (cycle === 'semimonthly') {
         let current = startDate.clone().startOf('month');
@@ -125,9 +111,7 @@ export const useSubscriptions = () => {
         return;
       }
   
-      if (!config) {
-        return;
-      }
+      if (!config) return;
   
       let current = baseDate.clone();
       const { unit, step } = config;
@@ -145,55 +129,35 @@ export const useSubscriptions = () => {
     });
   
     // Convert map to array
-    const result: HighlightedDay[] = [];
+    const result: {
+      date: string;
+      colors: string[];
+      id: string[];
+      app_name: string[];
+      cost: string[];
+      due_date: string[];
+      icons: string[];
+      average_cost: string[];
+      cost_type: string[];
+    }[] = [];
   
     daysMap.forEach((value, date) => {
       result.push({
+        icons: value.icons,
         date,
         colors: value.colors,
         id: value.id,
         app_name: value.app_name,
         cost: value.cost,
         due_date: value.due_date,
-        icons: value.icons,
+        average_cost: value.average_cost,
+        cost_type: value.cost_type,
       });
     });
-    
   
     return result;
   };
 
-  // const generateHighlightedDays = (subscriptions: Subscription[], currentDate: moment.Moment): HighlightedDay[] => {
-  //   const highlights: { [key: string]: HighlightedDay } = {};
-    
-  //   subscriptions.forEach((sub) => {
-  //     if (!sub.due_date) return;
-      
-  //     const [day, month, year] = sub.due_date.split('/').map(Number);
-  //     const dueDate = moment({ year, month: month - 1, day });
-      
-  //     const dateStr = dueDate.format('YYYY-MM-DD');
-      
-  //     if (!highlights[dateStr]) {
-  //       highlights[dateStr] = {
-  //         date: dateStr,
-  //         colors: [],
-  //         id: [],
-  //         cost: [],
-  //         app_name: [],
-  //         due_date: []
-  //       };
-  //     }
-      
-  //     highlights[dateStr].colors.push(sub.color || '#3AABCC');
-  //     highlights[dateStr].id.push(sub.id || '');
-  //     highlights[dateStr].cost.push(sub.cost.toString());
-  //     highlights[dateStr].app_name.push(sub.app_name);
-  //     highlights[dateStr].due_date.push(sub.due_date);
-  //   });
-    
-  //   return Object.values(highlights);
-  // };
 
   const getTotalMonthlyCost = (highlightedDays: HighlightedDay[]): number => {
     const currentDate = new Date();
@@ -206,7 +170,12 @@ export const useSubscriptions = () => {
       return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
     })
     .reduce((monthlyTotal, entry) => {
-      const costs = entry.cost || []; // Fallback to empty array if undefined
+     // const costs = entry.cost || []; // Fallback to empty array if undefined
+      const isVariable = entry.cost_type?.[0] === 'variable';
+      const costs = isVariable
+        ? Array.isArray(entry.average_cost) ? entry.average_cost : []
+        : Array.isArray(entry.cost) ? entry.cost : [];
+
       const entryTotal = costs.reduce((entrySum: number, cost: any) => {
         const numericCost = parseFloat(cost);
         return entrySum + (isNaN(numericCost) ? 0 : numericCost);
@@ -222,7 +191,12 @@ export const useSubscriptions = () => {
    // if (sub.status === 'cancelled' || sub.status === 'paused') return;
 
     let yearlyAmount = 0;
-    let cost: number = parseFloat(sub.cost) || 0;
+
+    const isVariable = sub.cost_type === 'variable';
+    let cost: number = parseFloat(
+      isVariable ? sub.average_cost ?? '0' : sub.cost ?? '0'
+    );
+
     
     //const rawCost = sub.cost_type === 'variable' ? (sub.average_cost || sub.cost) : sub.cost;
    // const cost = parseFloat(rawCost);

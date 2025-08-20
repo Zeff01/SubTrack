@@ -1,7 +1,9 @@
 import { initializeApp, FirebaseApp } from "firebase/app";
 import { getFirestore, Firestore } from "firebase/firestore";
-import { initializeAuth, getReactNativePersistence, Auth } from 'firebase/auth';
+import { initializeAuth, getReactNativePersistence, Auth, getAuth } from 'firebase/auth';
+//import { initializeAuth, Auth, getAuth } from 'firebase/auth';
 import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage';
+
 
 interface FirebaseConfig {
   apiKey: string | undefined;
@@ -31,11 +33,26 @@ for (const field of requiredFields) {
   }
 }
 
+
+
 const app: FirebaseApp = initializeApp(firebaseConfig as any);
 
-const auth: Auth = initializeAuth(app, {
+// const auth: Auth = initializeAuth(app, {
+//     persistence: getReactNativePersistence(ReactNativeAsyncStorage),
+// });
+
+//const auth: Auth = getAuth(app);
+
+// Auth with session persistence (safe fallback if already initialized)
+let auth: Auth;
+try {
+  auth = initializeAuth(app, {
     persistence: getReactNativePersistence(ReactNativeAsyncStorage),
-});
+  });
+} catch (e: any) {
+  // Fallback to getAuth if already initialized or in unsupported environments
+  auth = getAuth(app);
+}
 
 const db: Firestore = getFirestore(app);
 

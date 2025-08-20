@@ -5,19 +5,22 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
-  Alert
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
-import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
 import { changePassword } from '../../../services/authService';
-import { useAuth } from '../../providers/AuthProvider'; // Import your AuthProvider
-
-
+import { useAuth } from '../../providers/AuthProvider';
+import { useTheme } from '../../providers/ThemeProvider';
+import { FadeInView } from '../../components/animated/FadeInView';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const UpdatePasswordScreen = () => {
   const navigation = useNavigation();
-  const authContext = useAuth();
-  const { user, authLoading } = authContext;
+  const { user } = useAuth();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
 
   const [form, setForm] = useState({
     currentPassword: '',
@@ -26,98 +29,108 @@ const UpdatePasswordScreen = () => {
   });
 
   const handleChange = (key: keyof typeof form, value: string) => {
-    setForm({ ...form, [key]: value });
+    setForm((prev) => ({ ...prev, [key]: value }));
   };
 
+  const handleSave = async () => {
+    if (form.newPassword !== form.confirmPassword) {
+      Alert.alert('Validation Error', 'New password and confirmation do not match.');
+      return;
+    }
 
-    const handleSave = async () => {
-      if (form.newPassword !== form.confirmPassword) {
-        alert('New password and confirmation do not match.');
-        return;
+    try {
+      const response = await changePassword(user, form.newPassword);
+      if (response.success) {
+        Alert.alert("Success", "Password updated successfully.");
+        (navigation as any).navigate('App', { screen: 'Login' });
+      } else {
+        Alert.alert("Update Failed", response.error || "Unknown error");
       }
-  
-      try {
-        const response = await changePassword(user, form.newPassword); // Call your Firebase update method
-        if (response.success) {
-          Alert.alert("Success", response.message);
-          // (navigation as any).navigate('Login')
-          (navigation as any).navigate('App', { screen: 'Login' })
-        } else {
-          Alert.alert("Update Password Failed", response.error);
-        }
-      } catch (error) {
-        Alert.alert("Error", "An error occurred while logging in.");
-      }
-    };
-
+    } catch (error) {
+      Alert.alert("Error", "An error occurred while updating password.");
+    }
+  };
 
   return (
-    <>     
-    <View className="flex-1 bg-white">
-     <View className="pt-12 pb-6 px-6 bg-[#D9D9D9] rounded-b-3xl">
-          <View className="relative items-center justify-center">
-            <TouchableOpacity
-              onPress={() => navigation.goBack()}
-              className="absolute left-0 px-4"
-            >
-              <Ionicons name="chevron-back" size={25} color="black" />
-            </TouchableOpacity>
-            <Text className="text-xl font-semibold text-gray-800">
-               Change Password
-            </Text>
-          </View>
-        </View>
-
-      {/* Form */}
-      <ScrollView className="flex-1 bg-white px-4 py-6">
-        <View className="bg-white rounded-2xl p-6 shadow-md">
-          {/* Current Password */}
-          {/* <View className="mb-4">
-            <Text className="text-gray-700 mb-1">Current Password</Text>
-            <TextInput
-              className="border border-gray-200 p-3 rounded-lg bg-gray-50"
-              placeholder="Enter current password"
-              secureTextEntry
-              value={form.currentPassword}
-              onChangeText={(text) => handleChange('currentPassword', text)}
-            />
-          </View> */}
-
-          {/* New Password */}
-          <View className="mb-4">
-            <Text className="text-gray-700 mb-1">New Password</Text>
-            <TextInput
-              className="border border-gray-200 p-3 rounded-lg bg-gray-50"
-              placeholder="Enter new password"
-              secureTextEntry
-              value={form.newPassword}
-              onChangeText={(text) => handleChange('newPassword', text)}
-            />
-          </View>
-
-          {/* Confirm Password */}
-          <View className="mb-4">
-            <Text className="text-gray-700 mb-1">Confirm Password</Text>
-            <TextInput
-              className="border border-gray-200 p-3 rounded-lg bg-gray-50"
-              placeholder="Confirm new password"
-              secureTextEntry
-              value={form.confirmPassword}
-              onChangeText={(text) => handleChange('confirmPassword', text)}
-            />
-          </View>
-
-          {/* Save Button */}
-          <TouchableOpacity
-            onPress={handleSave}
-            className="bg-blue-600 py-3 rounded-lg mt-4 shadow-sm"
-          >
-            <Text className="text-white font-bold text-center">Update Password</Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
+    <SafeAreaView className={`flex-1 ${isDark ? 'bg-[#18181B]' : 'bg-gray-50'}`} edges={['top']}>
+      {/* Header */}
+      <View className={`flex-1 justify-center items-center min-h-10 max-h-14 px-6 shadow-sm ${isDark ? 'bg-[#27272A]' : 'bg-white'}`}>
+        <FadeInView duration={300}>
+          <Text className={`text-2xl font-bold text-center ${isDark ? 'text-zinc-200' : 'text-gray-900'}`}>
+            Change Password
+          </Text>
+        </FadeInView>
       </View>
-    </>
+
+      {/* Content */}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        className="flex-1"
+      >
+        <ScrollView
+          className={`flex-1 px-4 py-6 ${isDark ? 'bg-[#18181B]' : 'bg-gray-50'}`}
+          contentContainerStyle={{ paddingBottom: 20 }}
+        >
+          <View className={`rounded-2xl p-6 shadow-sm border ${isDark ? 'bg-[#27272A] border-[#3F3F46]' : 'bg-white border-gray-100'}`}>
+            
+            {/* Optional: Current Password Field (disabled by default) */}
+            {/*
+            <View className="mb-4">
+              <Text className={`mb-1 font-medium ${isDark ? 'text-zinc-200' : 'text-gray-700'}`}>
+                Current Password
+              </Text>
+              <TextInput
+                className={`p-3 rounded-lg ${isDark ? 'bg-[#1F2937] text-white border border-[#3F3F46]' : 'bg-gray-50 border border-gray-200 text-gray-900'}`}
+                placeholder="Enter current password"
+                placeholderTextColor={isDark ? '#9CA3AF' : '#6B7280'}
+                secureTextEntry
+                value={form.currentPassword}
+                onChangeText={(text) => handleChange('currentPassword', text)}
+              />
+            </View>
+            */}
+
+            {/* New Password */}
+            <View className="mb-4">
+              <Text className={`mb-1 font-medium ${isDark ? 'text-zinc-200' : 'text-gray-700'}`}>
+                New Password
+              </Text>
+              <TextInput
+                className={`p-3 rounded-lg ${isDark ? 'bg-[#1F2937] text-white border border-[#3F3F46]' : 'bg-gray-50 border border-gray-200 text-gray-900'}`}
+                placeholder="Enter new password"
+                placeholderTextColor={isDark ? '#9CA3AF' : '#6B7280'}
+                secureTextEntry
+                value={form.newPassword}
+                onChangeText={(text) => handleChange('newPassword', text)}
+              />
+            </View>
+
+            {/* Confirm Password */}
+            <View className="mb-4">
+              <Text className={`mb-1 font-medium ${isDark ? 'text-zinc-200' : 'text-gray-700'}`}>
+                Confirm Password
+              </Text>
+              <TextInput
+                className={`p-3 rounded-lg ${isDark ? 'bg-[#1F2937] text-white border border-[#3F3F46]' : 'bg-gray-50 border border-gray-200 text-gray-900'}`}
+                placeholder="Confirm new password"
+                placeholderTextColor={isDark ? '#9CA3AF' : '#6B7280'}
+                secureTextEntry
+                value={form.confirmPassword}
+                onChangeText={(text) => handleChange('confirmPassword', text)}
+              />
+            </View>
+
+            {/* Save Button */}
+            <TouchableOpacity
+              onPress={handleSave}
+              className="bg-blue-600 py-3 rounded-lg mt-4 shadow-sm"
+            >
+              <Text className="text-white font-bold text-center">Update Password</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 };
 

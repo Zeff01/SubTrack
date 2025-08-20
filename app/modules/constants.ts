@@ -31,6 +31,24 @@ export const payments = [
   { key: 'refunded', value: 'Refunded' },
 ];
 
+export const categories = [
+    { key: 'entertainment', value: 'Entertainment', icon: 'play-circle' },
+    { key: 'utilities', value: 'Utilities', icon: 'flash' },
+    { key: 'productivity', value: 'Productivity', icon: 'briefcase' },
+    { key: 'health&fitness', value: 'Health & Fitness', icon: 'fitness' },
+    { key: 'education', value: 'Education', icon: 'school' },
+    { key: 'food&Delivery', value: 'Food & Delivery', icon: 'restaurant' },
+    { key: 'transportation', value: 'Transportation', icon: 'car' },
+    { key: 'shopping', value: 'Shopping', icon: 'cart' },
+    { key: 'finance', value: 'Finance', icon: 'wallet' },
+    { key: 'other', value: 'Other', icon: 'ellipsis-horizontal' },
+  ];
+
+export const defaultIcons = [
+    '📺', '💡', '💧', '🔥', '📱', '🎵', '🎮', '📚',
+    '🏋️', '🚗', '🛒', '💳', '🏠', '📡', '☁️', '🎬'
+  ];
+
 export function formatDueDate(dateStr: string): string {
   // Split the input "MM/DD/YYYY" into parts
   const [month, day, year] = dateStr.split('/');
