@@ -24,7 +24,7 @@ export interface AuthResponse {
 export interface Subscription {
   id?: string;
   user_id: string;
-  uid?: string; // Keep for backward compatibility
+  uid?: string; 
   app_name: string;
   cost: string;
   cost_type?: 'fixed' | 'variable';

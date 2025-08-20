@@ -1,339 +1,293 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, TextInput, Image, Modal, Alert, ActivityIndicator } from 'react-native';
+import {
+  View, Text, ScrollView, TouchableOpacity, Modal, Alert
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { FontAwesome } from '@expo/vector-icons';
-
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import LoginScreen from '../../(screens)/Login';
-import { useAuth } from '../../providers/AuthProvider'; // Import your AuthProvider
-
-import { useRoute } from '@react-navigation/native';
-import { deleteDocumentSubscription, retrieveSpecificDocumentSubscriptionSpecificUser } from '../../../services/userService';
-import { cycles, reminders, payments, formatDueDate } from '../../modules/constants'; // Adjust path as needed
-import { User } from 'firebase/auth';
+import { useAuth } from '../../providers/AuthProvider';
+import {
+  deleteDocumentSubscription,
+  retrieveSpecificDocumentSubscriptionSpecificUser
+} from '../../../services/userService';
 import { FadeInView } from '../../components/animated/FadeInView';
 import { SlideInView } from '../../components/animated/SlideInView';
-
-
+import { cycles, reminders, categories } from '../../modules/constants';
+import { useTheme } from '../../providers/ThemeProvider';
 
 const SubscriptionDetailsScreen = () => {
   const navigation = useNavigation();
   const route = useRoute();
-  const authContext = useAuth();
-  const { user } = authContext;
-  const params = route.params as { subscription: any } | undefined;
-  const subscription = params?.subscription;
-
-  const [appName, setAppName] = useState('');
-  const [cost, setCost] = useState('');
-  const [dueDate, setDueDate] = useState<string>(new Date().toLocaleDateString());
-  const [cycle, setCycle] = useState('');
-  const [remindMe, setRemindMe] = useState('');
-  const [paymentStatus, setPaymentStatus] = useState('');
-  const [selectedColor, setSelectedColor] = useState('');
+  const { user } = useAuth();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+  const subscription = (route.params as any)?.subscription;
+  const [subscriptionData, setSubscriptionData] = useState<any>(null);
   const [modalVisible, setModalVisible] = useState(false);
-  const [userData, setUserData] =  useState<User | null>(null); // ✅ Allow User or null
-  const [subscriptionData, setSubscriptionData] =  useState<any>(null); // ✅ Allow User or null
-
-  if (!user) {
-    return <LoginScreen />;
-  }
-
-  if (!subscription) {
-    return (
-      <View className="flex-1 items-center justify-center">
-        <Text>No subscription data provided</Text>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text className="text-blue-500 mt-4">Go Back</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
 
   useEffect(() => {
-    setUserData(user);
     if (user?.uid && subscription?.id) {
-      fetchSubscription(user.uid);
+      (async () => {
+        const res = await retrieveSpecificDocumentSubscriptionSpecificUser(user.uid, subscription.id);
+        if (res?.data?.length) setSubscriptionData(res.data[0]);
+      })();
     }
   }, [user, subscription]);
 
-  const fetchSubscription = async (user_uid : string) => {
-      if (!subscription?.id) return;
-      const response = await retrieveSpecificDocumentSubscriptionSpecificUser(user_uid, subscription.id); // Call your Firebase update method
-      if (response?.data && response.data.length > 0) {
-        setSubscriptionData(response.data[0]);
-      }
-  };
+  if (!user) return <LoginScreen />;
+  if (!subscription) return (
+    <View className={`${isDark ? 'bg-[#18181B]' : 'bg-gray-50'} flex-1 items-center justify-center`}>
+      <Text className={`${isDark ? 'text-zinc-200' : 'text-gray-900'}`}>No subscription data</Text>
+      <TouchableOpacity onPress={() => navigation.goBack()}>
+        <Text className="text-blue-500 mt-4">Go Back</Text>
+      </TouchableOpacity>
+    </View>
+  );
 
- 
-  const getPaymentLabel = (key: string) => {
-      const payment = payments.find(r => r.key === key);
-      return payment ? payment.value : key;
-  };
-
-  const getCycleLabel = (key: string) => {
-      const cycle = cycles.find(r => r.key === key);
-      return cycle ? cycle.value : key;
-  };
-
-  const getReminderLabel = (key: string) => {
-      const reminder = reminders.find(r => r.key === key);
-      return reminder ? reminder.value : key;
-  };
-
+  const getLabel = (list: any[], key?: string) => list.find(r => r.key === key)?.value || key;
 
   const handleDelete = async () => {
-    const response = await deleteDocumentSubscription(subscription.id); // Call your Firebase update method
-    setModalVisible(false); // close modal
-    (navigation as any).navigate('MainTabs', {
-          screen: 'Subscriptions',
-          params: {
-            screen: 'subscriptions',
-          },
-    });
+    await deleteDocumentSubscription(subscription.id);
+    setModalVisible(false);
+    Alert.alert("Deleted", "Subscription removed successfully.", [{
+      text: "OK",
+         onPress: () =>
+              (navigation as any).navigate('MainTabs', {
+                screen: 'Subscriptions',
+                params: {
+                  screen: 'subscriptions',
+                },
+              }),
+    }]);
   };
 
-
-   return (
-    <SafeAreaView className="flex-1 bg-gray-50" edges={['top']}>
+  return (
+    <SafeAreaView className={`flex-1 ${isDark ? 'bg-[#18181B]' : 'bg-gray-50'}`} edges={['top']}>
       {/* Header */}
-      <View className="bg-white shadow-sm border-b border-gray-100">
+      <View className={`${isDark ? 'bg-[#27272A] border-b-[#3F3F46]' : 'bg-white'} shadow-sm`}>
         <View className="flex-row items-center justify-between px-4 py-4">
-          <TouchableOpacity 
-            onPress={() => navigation.goBack()}
-            className="p-2"
-          >
-            <Ionicons name="chevron-back" size={24} color="#374151" />
+          <TouchableOpacity onPress={() => navigation.goBack()} className="p-2">
+            <Ionicons name="chevron-back" size={24} color={isDark ? '#E5E7EB' : '#374151'} />
           </TouchableOpacity>
-          <Text className="text-xl font-semibold text-gray-900">
+          <Text className={`${isDark ? 'text-zinc-200' : 'text-gray-900'} text-xl font-semibold`}>
             Subscription Details
           </Text>
           <View className="w-10" />
         </View>
       </View>
 
-    <ScrollView className="flex-1 bg-gray-50" showsVerticalScrollIndicator={false}>
-      <View className="px-4 pb-24">
-        {/* Header Card with Icon */}
-        <SlideInView direction="down" duration={250} delay={100}>
-          <View className="bg-white rounded-2xl p-6 mb-4 mt-4 shadow-sm border border-gray-100">
-            <View className="items-center">
-              <View className="w-24 h-24 rounded-2xl mb-4 items-center justify-center"
-                style={{ backgroundColor: `${subscriptionData?.selected_color || subscriptionData?.color || subscription?.color || '#3AABCC'}20` }}>
-                <Text className="text-5xl">
-                  {subscriptionData?.icon || subscription?.icon || subscriptionData?.app_name?.substring(0, 2).toUpperCase() || '?'}
-                </Text>
-              </View>
-              <Text className="text-2xl font-bold text-gray-900 text-center">
-                {subscriptionData?.app_name || subscription?.app_name}
-              </Text>
-              {(subscriptionData?.category || subscription?.category) && (
-                <View className="mt-2 px-3 py-1 bg-gray-100 rounded-full">
-                  <Text className="text-sm text-gray-600">{subscriptionData?.category || subscription?.category}</Text>
-                </View>
-              )}
-            </View>
-          </View>
-        </SlideInView>
-
-        {/* Cost Information */}
-        <SlideInView direction="left" duration={250} delay={200}>
-          <View className="bg-white rounded-2xl p-4 mb-4 shadow-sm border border-gray-100">
-            <Text className="text-sm font-medium text-gray-500 mb-3">Payment Details</Text>
-            
-            <View className="space-y-3">
-              <View className="flex-row justify-between items-center">
-                <Text className="text-gray-700">Cost Type</Text>
-                <View className="flex-row items-center">
-                  <Text className="text-gray-900 font-medium">
-                    {(subscriptionData?.cost_type || subscription?.cost_type) === 'variable' ? 'Variable' : 'Fixed'}
-                  </Text>
-                  {(subscriptionData?.cost_type || subscription?.cost_type) === 'variable' && (
-                    <View className="ml-2 px-2 py-0.5 bg-orange-100 rounded">
-                      <Text className="text-orange-600 text-xs font-medium">Varies</Text>
-                    </View>
-                  )}
-                </View>
-              </View>
-
-              <View className="h-px bg-gray-100" />
-
-              <View className="flex-row justify-between items-center">
-                <Text className="text-gray-700">
-                  {(subscriptionData?.cost_type || subscription?.cost_type) === 'variable' ? 'Average Cost' : 'Cost'}
-                </Text>
-                <Text className="text-lg font-semibold text-gray-900">
-                  ₱{subscriptionData?.cost || subscription?.cost}
-                </Text>
-              </View>
-
-              <View className="h-px bg-gray-100" />
-
-              <View className="flex-row justify-between items-center">
-                <Text className="text-gray-700">Billing Cycle</Text>
-                <Text className="text-gray-900 font-medium">
-                  {getCycleLabel(subscriptionData?.cycle || subscription?.cycle)}
-                </Text>
-              </View>
-            </View>
-          </View>
-        </SlideInView>
-
-        {/* Schedule Information */}
-        <SlideInView direction="right" duration={250} delay={250}>
-          <View className="bg-white rounded-2xl p-4 mb-4 shadow-sm border border-gray-100">
-            <Text className="text-sm font-medium text-gray-500 mb-3">Schedule</Text>
-            
-            <View className="space-y-3">
-              <View className="flex-row justify-between items-center">
-                <Text className="text-gray-700">Due Date</Text>
-                <Text className="text-gray-900 font-medium">
-                  {subscriptionData?.due_date || subscription?.due_date}
-                </Text>
-              </View>
-
-              <View className="h-px bg-gray-100" />
-
-              <View className="flex-row justify-between items-center">
-                <Text className="text-gray-700">Reminder</Text>
-                <Text className="text-gray-900 font-medium">
-                  {getReminderLabel(subscriptionData?.remind_me || subscriptionData?.reminder || subscription?.reminder)}
-                </Text>
-              </View>
-            </View>
-          </View>
-        </SlideInView>
-
-        {/* Additional Information */}
-        <SlideInView direction="left" duration={250} delay={300}>
-          <View className="bg-white rounded-2xl p-4 mb-4 shadow-sm border border-gray-100">
-            <Text className="text-sm font-medium text-gray-500 mb-3">Additional Details</Text>
-            
-            <View className="space-y-3">
-              <View className="flex-row justify-between items-center">
-                <Text className="text-gray-700">Status</Text>
-                <View className={`px-2 py-1 rounded ${
-                  (subscriptionData?.status || subscription?.status) === 'active' 
-                    ? 'bg-green-100' 
-                    : (subscriptionData?.status || subscription?.status) === 'paused'
-                    ? 'bg-yellow-100'
-                    : 'bg-red-100'
-                }`}>
-                  <Text className={`text-xs font-medium ${
-                    (subscriptionData?.status || subscription?.status) === 'active' 
-                      ? 'text-green-600' 
-                      : (subscriptionData?.status || subscription?.status) === 'paused'
-                      ? 'text-yellow-600'
-                      : 'text-red-600'
-                  }`}>
-                    {(subscriptionData?.status || subscription?.status || 'active').toUpperCase()}
+      <ScrollView className={`${isDark ? 'bg-[#18181B]' : 'bg-gray-50'} flex-1`} showsVerticalScrollIndicator={false}>
+        <View className="px-4 pb-24">
+          {/* Header Card */}
+          <SlideInView direction="down" duration={250} delay={100}>
+            <View className={`${isDark ? 'bg-[#27272A] border-[#3F3F46]' : 'bg-white border-gray-100'} rounded-2xl p-6 mb-4 mt-4 border shadow-sm`}>
+              <View className="items-center">
+                <View
+                  className="w-24 h-24 rounded-2xl mb-4 items-center justify-center"
+                  style={{ backgroundColor: `${(subscriptionData?.selected_color ?? subscription?.color) || '#3AABCC'}20` }}
+                >
+                  <Text className={`${isDark ? 'text-white' : 'text-gray-900'} text-5xl`}>
+                    {(
+                      subscriptionData?.icon ??
+                      subscription?.icon ??
+                      subscription?.app_name?.substring(0, 2).toUpperCase()
+                    ) ?? '?'}
                   </Text>
                 </View>
-              </View>
-
-              <View className="h-px bg-gray-100" />
-
-              <View className="flex-row justify-between items-center">
-                <Text className="text-gray-700">Color</Text>
-                <View className="flex-row items-center">
-                  <View 
-                    className="w-6 h-6 rounded-full mr-2"
-                    style={{ backgroundColor: subscriptionData?.selected_color || subscriptionData?.color || subscription?.color || '#3AABCC' }}
-                  />
-                  <Text className="text-gray-500 text-sm">
-                    {subscriptionData?.selected_color || subscriptionData?.color || subscription?.color || '#3AABCC'}
-                  </Text>
-                </View>
-              </View>
-
-              {(subscriptionData?.notes || subscription?.notes) && (
-                <>
-                  <View className="h-px bg-gray-100" />
-                  <View>
-                    <Text className="text-gray-700 mb-1">Notes</Text>
-                    <Text className="text-gray-600 text-sm">
-                      {subscriptionData?.notes || subscription?.notes}
+                <Text className={`${isDark ? 'text-white' : 'text-gray-900'} text-2xl font-bold text-center`}>
+                  {subscriptionData?.app_name ?? subscription?.app_name}
+                </Text>
+                {(subscriptionData?.category || subscription?.category) && (
+                  <View className={`${isDark ? 'bg-gray-400' : 'bg-gray-100'} mt-2 px-3 py-1 rounded-full`}>
+                    <Text className={`${isDark ? 'text-gray-100' : 'text-gray-600'} text-sm`}>
+                      {getLabel(categories, subscriptionData?.category ?? subscription?.category)}
                     </Text>
                   </View>
-                </>
-              )}
+                )}
+              </View>
             </View>
-          </View>
-        </SlideInView>
+          </SlideInView>
 
-        {/* Action Buttons */}
-        <SlideInView direction="up" duration={250} delay={350}>
-          <View className="space-y-3 mt-6">
-            <TouchableOpacity 
-              className="bg-[#3AABCC] rounded-xl py-4 w-full shadow-sm"
-              onPress={() => 
-                (navigation as any).navigate('edit_subscription', { 
-                  subscription: subscriptionData || subscription 
-                })
-              }
-              activeOpacity={0.8}
-            >
-              <View className="flex-row items-center justify-center">
-                <Ionicons name="create-outline" size={20} color="white" />
-                <Text className="text-white text-center text-lg font-semibold ml-2">Edit Subscription</Text>
+          {/* Payment Details */}
+          <SlideInView direction="left" duration={250} delay={200}>
+            <View className={`${isDark ? 'bg-[#27272A] border-[#3F3F46]' : 'bg-white border-gray-100'} rounded-2xl p-4 mb-4 border shadow-sm`}>
+              <Text className={`${isDark ? 'text-gray-400' : 'text-gray-500'} font-extrabold text-xl mb-3`}>Payment Details</Text>
+              <View className="space-y-3">
+                <View className="flex-row justify-between items-center">
+                  <Text className={`font-medium ${isDark ? 'text-white' : 'text-gray-700'}`}>Cost Type</Text>
+                  <View className="flex-row items-center">
+                    <Text className={`${isDark ? 'text-white' : 'text-gray-900'} font-medium`}>
+                      {(subscriptionData?.cost_type ?? subscription?.cost_type) === 'variable' ? 'Variable' : 'Fixed'}
+                    </Text>
+                    {(subscriptionData?.cost_type ?? subscription?.cost_type) === 'variable' && (
+                      <View className="ml-2 px-2 py-0.5 bg-orange-100 rounded">
+                        <Text className="text-orange-600 text-xs">Varies</Text>
+                      </View>
+                    )}
+                  </View>
+                </View>
+                <View className={`${isDark ? 'bg-[#3F3F46]' : 'bg-gray-100'} h-px`} />
+                <View className="flex-row justify-between items-center">
+                  <Text className={`font-medium ${isDark ? 'text-white' : 'text-gray-700'}`}>
+                    {(subscriptionData?.cost_type ?? subscription?.cost_type) === 'variable' ? 'Average Cost' : 'Cost'}
+                  </Text>
+                  <Text className={`${isDark ? 'text-white' : 'text-gray-900'} text-lg font-semibold`}>
+                    {(subscriptionData?.cost_type ?? subscription?.cost_type) === 'variable'
+                      ? parseFloat(subscriptionData?.average_cost ?? subscription?.average_cost ?? '0').toFixed(2)
+                      : parseFloat(subscriptionData?.cost ?? subscription?.cost ?? '0').toFixed(2)}
+                  </Text>
+                </View>
+                <View className={`${isDark ? 'bg-[#3F3F46]' : 'bg-gray-100'} h-px`} />
+                <View className="flex-row justify-between items-center">
+                  <Text className={`font-medium ${isDark ? 'text-white' : 'text-gray-700'}`}>Billing Cycle</Text>
+                  <Text className={`${isDark ? 'text-white' : 'text-gray-900'} font-medium`}>
+                    {getLabel(cycles, subscriptionData?.cycle ?? subscription?.cycle)}
+                  </Text>
+                </View>
               </View>
-            </TouchableOpacity>
+            </View>
+          </SlideInView>
 
-            <TouchableOpacity 
-              className="bg-red-500 rounded-xl py-4 w-full shadow-sm"
-              onPress={() => setModalVisible(true)}
-              activeOpacity={0.8}
-            >
-              <View className="flex-row items-center justify-center">
-                <Ionicons name="trash-outline" size={20} color="white" />
-                <Text className="text-white text-center text-lg font-semibold ml-2">Delete Subscription</Text>
+          {/* Schedule Section */}
+          <SlideInView direction="right" duration={250} delay={300}>
+            <View className={`${isDark ? 'bg-[#27272A] border-[#3F3F46]' : 'bg-white border-gray-100'} rounded-2xl p-4 mb-4 border shadow-sm`}>
+              <Text className={`${isDark ? 'text-gray-400' : 'text-gray-500'} font-extrabold text-xl mb-3`}>Schedule</Text>
+              <View className="space-y-3">
+                <View className="flex-row justify-between items-center">
+                  <Text className={`font-medium ${isDark ? 'text-white' : 'text-gray-700'}`}>Due Date</Text>
+                  <Text className={`${isDark ? 'text-white' : 'text-gray-900'} font-medium`}>
+                    {subscriptionData?.due_date ?? subscription?.due_date}
+                  </Text>
+                </View>
+                <View className={`${isDark ? 'bg-[#3F3F46]' : 'bg-gray-100'} h-px`} />
+                <View className="flex-row justify-between items-center">
+                  <Text className={`font-medium ${isDark ? 'text-white' : 'text-gray-700'}`}>Reminder</Text>
+                  <Text className={`${isDark ? 'text-white' : 'text-gray-900'} font-medium`}>
+                    {getLabel(reminders, (subscriptionData?.remind_me ?? subscription?.reminder))}
+                  </Text>
+                </View>
               </View>
-            </TouchableOpacity>
-          </View>
-        </SlideInView>
-      </View>
-    </ScrollView>
+            </View>
+          </SlideInView>
 
-    <Modal
-      transparent
-      visible={modalVisible}
-      animationType="fade"
-      onRequestClose={() => setModalVisible(false)}
+          {/* Additional Details Section */}
+          <SlideInView direction="left" duration={250} delay={400}>
+            <View className={`${isDark ? 'bg-[#27272A] border-[#3F3F46]' : 'bg-white border-gray-100'} rounded-2xl p-4 mb-4 border shadow-sm`}>
+              <Text className={`${isDark ? 'text-gray-400' : 'text-gray-500'} font-extrabold text-xl  mb-3`}>Additional Details</Text>
+              <View className="space-y-3">
+                <View className="flex-row justify-between items-center">
+                  <Text className={`font-medium ${isDark ? 'text-white' : 'text-gray-700'}`}>Status</Text>
+                  <View className={`${(subscriptionData?.status ?? subscription?.status) === 'active'
+                    ? 'bg-green-100'
+                    : (subscriptionData?.status ?? subscription?.status) === 'paused'
+                      ? 'bg-yellow-100'
+                      : 'bg-red-100'
+                  } px-2 py-1 rounded`}>
+                    <Text className={`${(subscriptionData?.status ?? subscription?.status) === 'active'
+                      ? 'text-green-600'
+                      : (subscriptionData?.status ?? subscription?.status) === 'paused'
+                        ? 'text-yellow-600'
+                        : 'text-red-600'
+                    } text-xs font-medium`}>
+                      {(subscriptionData?.status ?? subscription?.status ?? 'active').toUpperCase()}
+                    </Text>
+                  </View>
+                </View>
+                <View className={`${isDark ? 'bg-[#3F3F46]' : 'bg-gray-100'} h-px`} />
+                <View className="flex-row justify-between items-center">
+                  <Text className={`font-medium ${isDark ? 'text-white' : 'text-gray-700'}`}>Color</Text>
+                  <View className="flex-row items-center">
+                    <View
+                      className="w-6 h-6 rounded-full mr-2"
+                      style={{ backgroundColor: subscriptionData?.selected_color ?? subscription?.color ?? '#3AABCC' }}
+                    />
+                    <Text className={`${isDark ? 'text-gray-400' : 'text-gray-500'} text-sm`}>
+                      {subscriptionData?.selected_color ?? subscription?.color ?? '#3AABCC'}
+                    </Text>
+                  </View>
+                </View>
+                {(subscriptionData?.notes ?? subscription?.notes) && (
+                  <>
+                    <View className={`${isDark ? 'bg-[#3F3F46]' : 'bg-gray-100'} h-px`} />
+                    <View>
+                      <Text className={`${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>Notes</Text>
+                      <Text className={`${isDark ? 'text-gray-400' : 'text-gray-600'} text-sm`}>
+                        {subscriptionData?.notes ?? subscription?.notes}
+                      </Text>
+                    </View>
+                  </>
+                )}
+              </View>
+            </View>
+          </SlideInView>
+
+          {/* Action Buttons */}
+<SlideInView direction="up" duration={250} delay={500}>
+  <View className="mt-6">
+    <TouchableOpacity
+      className="bg-[#3AABCC] rounded-xl py-4 w-full shadow-sm mb-6"
+      onPress={() => (navigation as any).navigate('edit_subscription', {
+        subscription: subscriptionData ?? subscription
+      })}
+      activeOpacity={0.8}
     >
-      <View className="flex-1 justify-center items-center bg-black/50">
-        <View className="bg-white rounded-2xl w-[85%] p-6">
-          <View className="items-center mb-4">
-            <View className="w-16 h-16 bg-red-100 rounded-full items-center justify-center mb-3">
-              <Ionicons name="warning-outline" size={32} color="#EF4444" />
-            </View>
-            <Text className="text-xl font-semibold text-gray-900 text-center">
-              Delete Subscription?
-            </Text>
-          </View>
+      <View className="flex-row items-center justify-center">
+        <Ionicons name="create-outline" size={20} color="white" />
+        <Text className="text-white text-lg font-semibold ml-2">Edit Subscription</Text>
+      </View>
+    </TouchableOpacity>
+
+    <TouchableOpacity
+      className="bg-red-500 rounded-xl py-4 w-full shadow-sm"
+      onPress={() => setModalVisible(true)}
+      activeOpacity={0.8}
+    >
+      <View className="flex-row items-center justify-center">
+        <Ionicons name="trash-outline" size={20} color="white" />
+        <Text className="text-white text-lg font-semibold ml-2">Delete Subscription</Text>
+      </View>
+    </TouchableOpacity>
+  </View>
+</SlideInView>
+
+
+
           
-          <Text className="text-gray-600 text-center mb-6">
-            Are you sure you want to delete "{subscriptionData?.app_name || subscription?.app_name}"? This action cannot be undone.
-          </Text>
-          <View className="flex-row justify-between mt-4">
-            <TouchableOpacity
-              className="flex-1 bg-gray-200 py-3 rounded-lg mr-2"
-              onPress={() => setModalVisible(false)}
-            >
-              <Text className="text-center text-gray-700 font-semibold">Cancel</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              className="flex-1 bg-[#F2786F] py-3 rounded-lg ml-2"
-              onPress={handleDelete}
-            >
-              <Text className="text-center text-white font-semibold">Delete</Text>
-            </TouchableOpacity>
+        </View>
+      </ScrollView>
+
+      {/* Delete Confirmation Modal */}
+      <View>
+      <Modal transparent visible={modalVisible} animationType="fade" onRequestClose={() => setModalVisible(false)}>
+        <View className="flex-1 justify-center items-center ">
+          <View className={`${isDark ? 'bg-[#27272A]' : 'bg-white'} rounded-2xl w-[85%] p-6`}>
+            <View className="items-center mb-4">
+              <View className={`${isDark ? 'bg-red-800' : 'bg-red-100'} w-16 h-16 rounded-full items-center justify-center mb-3`}>
+                <Ionicons name="warning-outline" size={32} color={isDark ? '#F87171' : '#EF4444'} />
+              </View>
+              <Text className={`${isDark ? 'text-zinc-200' : 'text-gray-900'} text-xl font-semibold text-center`}>
+                Delete Subscription?
+              </Text>
+            </View>  
+            <Text className={`${isDark ? 'text-gray-400' : 'text-gray-600'} text-center mb-6`}>
+              Are you sure you want to delete “{subscriptionData?.app_name ?? subscription?.app_name}”? This action cannot be undone.
+            </Text>
+            <View className="flex-row justify-between mt-4">
+              <TouchableOpacity className={`${isDark ? 'bg-[#3F3F46]' : 'bg-gray-200'} flex-1 py-3 rounded-lg mr-2`} onPress={() => setModalVisible(false)}>
+                <Text className={`${isDark ? 'text-gray-300' : 'text-gray-700'} font-semibold text-center`}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity className="bg-[#F2786F] flex-1 py-3 rounded-lg ml-2" onPress={handleDelete}>
+                <Text className="text-white font-semibold text-center">Delete</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
+      </Modal>
       </View>
-    </Modal>
-  </SafeAreaView>
-  );
 
+    </SafeAreaView>
+  );
 };
+
 export default SubscriptionDetailsScreen;

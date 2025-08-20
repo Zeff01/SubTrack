@@ -63,7 +63,7 @@ export default function LoginScreen() {
       const trimmedEmail = email.trim().toLowerCase();
       
       // Debug log to check what's being sent
-      console.log('Attempting login with:', { email: trimmedEmail, hasPassword: !!password });
+      //console.log('Attempting login with:', { email: trimmedEmail, hasPassword: !!password });
       
       // Ensure email is not empty
       if (!trimmedEmail) {

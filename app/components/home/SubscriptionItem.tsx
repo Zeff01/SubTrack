@@ -1,16 +1,15 @@
-import React from 'react';
-import { View, Text } from 'react-native';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import { Subscription } from '../../../types';
 import moment from 'moment';
-import { ScaleButton } from '../animated/ScaleButton';
-import Animated, { 
-  useAnimatedStyle, 
-  useSharedValue,
-  withSpring,
+import React from 'react';
+import { Text, View } from 'react-native';
+import Animated, {
   interpolate,
   SlideInRight,
+  useAnimatedStyle,
+  useSharedValue
 } from 'react-native-reanimated';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import { Subscription } from '../../../types';
+import { ScaleButton } from '../animated/ScaleButton';
 
 interface SubscriptionItemProps {
   subscription: Subscription;
@@ -55,44 +54,50 @@ const SubscriptionItem: React.FC<SubscriptionItemProps> = ({
         className="my-2"
       >
         <Animated.View
-          className="py-6 px-4 flex-row justify-between items-center rounded-3xl shadow-sm"
+          className="flex-row items-center justify-between py-6 px-4 rounded-3xl shadow-sm"
           style={[{ backgroundColor }, animatedStyle]}
         >
-          <View className="flex justify-center items-center min-h-16">
-            <View className="bg-white/20 rounded-full h-14 w-14 items-center justify-center">
-              <Text className="text-2xl">
-                {subscription.icon || subscription.app_name.substring(0, 2).toUpperCase()}
-              </Text>
+          {/* LEFT: Icon + App Info */}
+          <View className="flex-row items-center flex-1 pr-4">
+            {/* Icon */}
+            <View className="items-center justify-center mr-4">
+              <View className="bg-white/20 rounded-full h-14 w-14 items-center justify-center">
+                <Text className="text-2xl text-white">
+                  {subscription.icon || subscription.app_name.substring(0, 2).toUpperCase()}
+                </Text>
+              </View>
             </View>
-          </View> 
-          
-          <View className="min-h-16 max-w-52 min-w-52 flex justify-center items-start">
-            <Text
-              className="font-bold text-base text-white"
-              numberOfLines={1}
-              ellipsizeMode="tail"
-            >
-              {subscription.app_name}
-            </Text>
-            <View className="flex-row items-center">
+
+            {/* Text Info */}
+            <View className="flex-1 justify-center">
               <Text
-                className="text-sm text-white/80"
+                className="font-bold text-base text-white"
                 numberOfLines={1}
                 ellipsizeMode="tail"
               >
-                {subscription.cycle.charAt(0).toUpperCase() + subscription.cycle.slice(1)}
+                {subscription.app_name}
               </Text>
-              {subscription.cost_type === 'variable' && (
-                <View className="ml-2 px-2 py-0.5 bg-white/20 rounded">
-                  <Text className="text-white text-xs font-medium">Variable</Text>
-                </View>
-              )}
+              <View className="flex-row items-center mt-1">
+                <Text
+                  className="text-sm text-white/80"
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
+                >
+                  {subscription.cycle.charAt(0).toUpperCase() + subscription.cycle.slice(1)}
+                </Text>
+                {subscription.cost_type === 'variable' && (
+                  <View className="ml-2 px-2 py-0.5 bg-white/20 rounded">
+                    <Text className="text-white text-xs font-medium">Variable</Text>
+                  </View>
+                )}
+              </View>
             </View>
           </View>
-          
-          <View className="flex-row justify-between items-center min-h-16">
-            <Text className="text-white font-semibold">{displayCost}</Text>
-            <Ionicons name="chevron-forward" size={25} color="white" className="ml-2" />
+
+          {/* RIGHT: Price + Chevron */}
+          <View className="flex-row items-center justify-end min-w-[80px] gap-x-2">
+            <Text className="text-white font-semibold text-base">{displayCost}</Text>
+            <Ionicons name="chevron-forward" size={25} color="white" />
           </View>
         </Animated.View>
       </ScaleButton>

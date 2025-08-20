@@ -1,306 +1,517 @@
-// import { View, Text, ScrollView, TouchableOpacity, TextInput, Image  } from 'react-native';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { View, TextInput, Text, TouchableOpacity, Alert, Platform, KeyboardAvoidingView, Modal, ScrollView, Keyboard, ActivityIndicator } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { FontAwesome } from '@expo/vector-icons';
-
-import React, { useState, useEffect, useCallback } from 'react';
-import { View, TextInput, Button, Text, TouchableOpacity, Pressable, Alert } from 'react-native';
-import { SelectList } from 'react-native-dropdown-select-list'; // You may need to install this library for dropdowns
+import { SelectList } from 'react-native-dropdown-select-list';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { useNavigation } from '@react-navigation/native';
-import { User } from 'firebase/auth';
-
-
-
 import LoginScreen from '../../(screens)/Login';
-import { useAuth } from '../../providers/AuthProvider'; // Import your AuthProvider
+import { useAuth } from '../../providers/AuthProvider';
 import { useRoute } from '@react-navigation/native';
-
 import ColorModal from '../../modals/SelectColorModal';
 import { useFocusEffect } from '@react-navigation/native';
-
 import { updateDocumentSubscription } from '../../../services/userService';
-import { cycles, reminders, payments } from '../../modules/constants'; // Adjust path as needed
-
+import { cycles, reminders, categories, defaultIcons } from '../../modules/constants';
+import { SlideInView } from '../../components/animated/SlideInView';
+import * as Animatable from 'react-native-animatable';
+import { useTheme } from '../../providers/ThemeProvider';
 
 const EditSubscriptionScreen = () => {
   const route = useRoute();
   const navigation = useNavigation();
-  const [appName, setAppName] = useState('');
   const [cost, setCost] = useState('');
-  const [dueDate, setDueDate] = useState<Date | null>(null);
   const [cycle, setCycle] = useState('');
   const [remindMe, setRemindMe] = useState('');
-  const [show, setShow] = useState(false);
-  const [id, setID] = useState(0);
   const authContext = useAuth();
-  const { user, authLoading } = authContext;
+  const { user } = authContext;
   const { subscription } = route.params as { subscription: any };
-  const [showModal, setShowModal] = useState(false);
   const [selectedColor, setSelectedColor] = useState('#7FB3FF');
-  const [userData, setUserData] =  useState<User | null>(null); // ✅ Allow User or null
-  const [paymentStatus, setPaymentStatus] = useState('');
+  const [showIconPicker, setShowIconPicker] = useState(false);
+  const [selectedIcon, setSelectedIcon] = useState('📺');
+  const [showColorModal, setShowColorModal] = useState(false);
+  const [serviceName, setServiceName] = useState('');
+  const [costType, setCostType] = useState<'fixed' | 'variable'>('fixed');
+  const [averageCost, setAverageCost] = useState('0');
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [dueDate, setDueDate] = useState<Date | null>(new Date());
+  const [loading, setLoading] = useState(false);
+  const [notes, setNotes] = useState('');
+  const [category, setCategory] = useState('Entertainment');
 
-  const [errors, setErrors] = useState({
-    appName: '',
-    cost: '',
-    dueDate: '',
-    cycle: '',
-    remindMe: '',
-    selectedColor: '',
-  });
-  
-  
+  const costRef = useRef<TextInput>(null);
+  const averageCostRef = useRef<TextInput>(null);
+  const notesRef = useRef<TextInput>(null);
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+
+  const onDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
+    if (Platform.OS === 'android') {
+      setShowDatePicker(false);
+    }
+    if (event.type === 'set' && selectedDate) {
+      setDueDate(selectedDate);
+      if (Platform.OS === 'ios') {
+        setShowDatePicker(false);
+      }
+    } else if (event.type === 'dismissed') {
+      setShowDatePicker(false);
+    }
+  };
+
+  const handleSubmit = async () => {
+    // Validation
+    if (!serviceName.trim()) {
+      Alert.alert('Error', 'Please enter a service name');
+      return;
+    }
+
+    if (costType === 'fixed' && !cost.trim()) {
+      Alert.alert('Error', 'Please enter the cost');
+      return;
+    }
+
+    if (costType === 'variable' && !averageCost.trim()) {
+      Alert.alert('Error', 'Please enter the average cost');
+      return;
+    }
+
+    if (!cycle) {
+      Alert.alert('Error', 'Please select a billing cycle');
+      return;
+    }
+
+    Keyboard.dismiss();
+    setLoading(true);
+
+    try {
+      const subscriptionData: any = {
+        user_id: user?.uid || '',
+        app_name: serviceName.trim(),
+        cost: costType === 'fixed' ? cost : "0",
+        average_cost: costType === 'variable' ? averageCost : "0",
+        cost_type: costType,
+        cycle: cycle.toLowerCase(),
+        due_date: dueDate?.toLocaleDateString('en-US'), // MM/DD/YYYY
+        reminder: remindMe,
+        color: selectedColor,
+        selected_color: selectedColor,
+        category: category,
+        icon: selectedIcon,
+        notes: notes.trim(),
+        status: 'active',
+      };
+
+      const response = await updateDocumentSubscription(subscription.id, subscriptionData);
+
+      if (response.success) {
+        Alert.alert(
+        'Success',
+        'Subscription updated successfully!',
+        [
+          {
+            text: 'OK',
+            onPress: () =>
+              (navigation as any).navigate('MainTabs', {
+                screen: 'Subscriptions',
+                params: {
+                  screen: 'subscriptions',
+                },
+              }),
+          },
+        ]
+      );
+      } else {
+        Alert.alert('Error', response.error || 'Failed to add subscription');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Something went wrong. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+    const defaultReminder = reminders.find(item => item.key === remindMe);
+  const defaultCycle = cycles.find(item => item.key === cycle);
+  const defaultCategory = categories.find(item => item.key === category);
+
+      const parseDate = (dateString : any) => {
+        if (typeof dateString !== 'string') return null;
+        const parts = dateString.split('/');
+        if (parts.length !== 3) return null;
+        const [month, day, year] = parts.map(Number);
+        const parsed = new Date(year, month - 1, day);
+        return isNaN(parsed.getTime()) ? null : parsed;
+      };
+
   useFocusEffect(
-      useCallback(() => {
-          setUserData(user);
-      }, [authLoading, user])
+    useCallback(() => {
+      // Load subscription data if available
+      if (subscription) {
+        setServiceName(subscription.app_name);
+        setCategory(subscription.category);
+        setSelectedIcon(subscription.icon);
+        setCostType(subscription.cost_type);
+        setCost(subscription.cost || '0');
+        setAverageCost(subscription.average_cost || '0');
+        setNotes(subscription.notes);
+        setRemindMe(subscription.remind_me);
+        setCycle(subscription.cycle);
+        setDueDate(parseDate(subscription.due_date));
+        setSelectedColor(subscription.selected_color);
+      }
+    }, [subscription])
   );
 
   if (!user) {
     return <LoginScreen />;
   }
 
-  useEffect(() => {
-    if (subscription) {
-      setAppName(subscription.app_name);
-      setCost(subscription.cost);
-      setCycle(subscription.cycle);
-      setRemindMe(subscription.remind_me);
-      setDueDate(convertToUSDateFormat(subscription.due_date));
-      setSelectedColor(subscription.selected_color);
-      setID(subscription.id);
-     // setPaymentStatus(subscription.payment_status);
-    }
-  }, [subscription]);
+  const styledCategories = categories.map(item => ({
+    key: item.key,
+    value: <Text style={{ color: isDark ? '#FFFFFF' : '#000000' }}>{item.value}</Text>, // White text
+  }));
 
-  function convertToUSDateFormat(dateStr: string): Date {
-    const [month, day, year] = dateStr.split('/');
-    const dayNum = parseInt(day, 10);
-    const monthNum = parseInt(month, 10);
-    const yearNum = parseInt(year, 10);
+  const styledReminders = reminders.map(item => ({
+    key: item.key,
+    value: <Text style={{ color: isDark ? '#FFFFFF' : '#000000' }}>{item.value}</Text>, // White text
+  }));
 
-    // Create and return a Date object
-    return new Date(yearNum, monthNum - 1, dayNum); // month is 0-based
-  }
+    const styledCycles = cycles.map(item => ({
+    key: item.key,
+    value: <Text style={{ color: isDark ? '#FFFFFF' : '#000000' }}>{item.value}</Text>, // White text
+  }));
 
-
-   const onChangeDate = (event: DateTimePickerEvent, date?: Date) => {
-    if (event.type === 'set' && date) {
-      setDueDate(date);
-    }
-    setShow(false);
-  };
-
-
-
-  const defaultReminder = reminders.find(item => item.key === remindMe);
-  const defaultCycle = cycles.find(item => item.key === cycle);
-  const defaultPayment = payments.find(item => item.key === paymentStatus);
-
-
-const handleEditSubscription = async () => {
-  if (!validateForm()) return;
-
-  try {
-    const subscription_data = {
-      uid: userData?.uid,
-      app_name: appName,
-      cost,
-      due_date: dueDate?.toLocaleDateString(),
-      cycle,
-      remind_me: remindMe,
-      selected_color: selectedColor,
-    };
-
-    await updateDocumentSubscription(id, subscription_data);
-
-    Alert.alert("Success", "Subscription updated successfully!");
-    (navigation as any).navigate('MainTabs', {
-      screen: 'Subscriptions',
-      params: { screen: 'subscriptions' },
-    });
-
-  } catch (error) {
-    Alert.alert("Error", "An error occurred while updating the subscription.");
-  }
-};
-
-
-  const validateForm = () => {
-  const newErrors: any = {};
-
-  if (!appName.trim()) newErrors.appName = 'App name is required';
-  if (!cost.trim()) newErrors.cost = 'Cost is required';
-  else if (isNaN(Number(cost))) newErrors.cost = 'Cost must be a number';
-
-  if (!dueDate) newErrors.dueDate = 'Due date is required';
-  if (!cycle) newErrors.cycle = 'Cycle selection is required';
-  if (!remindMe) newErrors.remindMe = 'Reminder selection is required';
-  if (!selectedColor) newErrors.selectedColor = 'Color is required';
-
-  setErrors(newErrors);
-  return Object.keys(newErrors).length === 0;
-};
-
-
-return (
-  <>
-    <View className="flex-1 bg-white">
-      <View className="pt-12 pb-6 px-6 bg-[#D9D9D9] rounded-b-3xl">
-          <View className="relative items-center justify-center">
-            <TouchableOpacity
-              onPress={() => navigation.goBack()}
-              className="absolute left-0 px-4"
-            >
-              <Ionicons name="chevron-back" size={25} color="black" />
-            </TouchableOpacity>
-            <Text className="text-xl font-semibold text-gray-800">
-               Edit Subscription
-            </Text>
-          </View>
+  return (
+    <SafeAreaView className={`flex-1 ${isDark ? 'bg-[#18181B]' : 'bg-gray-50'}`} edges={['top']}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} className="flex-1">
+        {/* Header */}
+        <View className={`${isDark ? 'bg-[#27272A] border-b-[#3F3F46]' : 'bg-white'} shadow-sm`}>
+                <View className="flex-row items-center justify-between px-4 py-4">
+                  <TouchableOpacity onPress={() => navigation.goBack()} className="p-2">
+                    <Ionicons name="chevron-back" size={24} color={isDark ? '#E5E7EB' : '#374151'} />
+                  </TouchableOpacity>
+                  <Text className={`${isDark ? 'text-zinc-200' : 'text-gray-900'} text-xl font-semibold`}>
+                    Edit Subscription
+                  </Text>
+                  <View className="w-10" />
+                </View>
         </View>
 
-        <View className="flex-1 bg-white p-4">
-             <View>
-                <Text className="text-sm mb-1 mt-4">App Name</Text>
-                <TextInput
-                  className="border border-gray-600 rounded-xl p-4"
-                  placeholder="Enter App Name"
-                  value={appName}
-                  onChangeText={(text) => {
-                    setAppName(text);
-                    setErrors({ ...errors, appName: '' });
-                  }}
-                />
-                <Text className={`text-red-500 text-sm  ${errors.appName ? '' : 'invisible'}`}>
-                  {errors.appName || 'placeholder'}
-                </Text>
-            </View>
+        <ScrollView className={`flex-1 ${isDark ? 'bg-[#18181B]' : 'bg-gray-50'}`} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: Platform.OS === 'ios' ? 40 : 60, paddingTop: 16 }}>
+          {/* Icon and Color Selection */}
+          <SlideInView direction="down" duration={250} delay={100}>
+            <View className={`mx-4 mb-4 p-4 rounded-2xl border ${isDark ? 'bg-[#27272A] border-[#3F3F46]' : 'bg-white border-gray-100'}`}>
+              <View className="flex-row items-center justify-center">
+                {/* Icon Selector */}
+                <TouchableOpacity onPress={() => setShowIconPicker(!showIconPicker)} className="items-center mr-6" activeOpacity={0.7}>
+                  <View className="w-20 h-20 rounded-2xl items-center justify-center" style={{ backgroundColor: `${selectedColor}20` }}>
+                    <Text className="text-4xl">{selectedIcon}</Text>
+                  </View>
+                  <Text className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'} mt-1`}>Tap to change</Text>
+                </TouchableOpacity>
 
-            <View>
-              <Text className="text-sm mb-1 mt-1">Cost</Text>
+                {/* Color Selector */}
+                <TouchableOpacity onPress={() => setShowColorModal(true)} className="items-center" activeOpacity={0.7}>
+                  <View className={`w-20 h-20 rounded-2xl items-center justify-center border-2 ${isDark ? 'border-gray-600' : 'border-gray-200'}`} style={{ backgroundColor: selectedColor }}>
+                    <Ionicons name="color-palette" size={32} color="white" />
+                  </View>
+                  <Text className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'} mt-1`}>Change color</Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* Icon Picker */}
+              {showIconPicker && (
+                <Animatable.View animation="fadeIn" duration={200} className="mt-4 pt-4 border-t border-gray-100">
+                  <View className="flex-row flex-wrap justify-center">
+                    {defaultIcons.map((icon, index) => (
+                      <TouchableOpacity key={index} onPress={() => { setSelectedIcon(icon); setShowIconPicker(false); }} className="p-3 m-1 rounded-lg hover:bg-gray-100">
+                        <Text className="text-2xl">{icon}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </Animatable.View>
+              )}
+            </View>
+          </SlideInView>
+
+          {/* Service Name */}
+          <SlideInView direction="left" duration={250} delay={200}>
+            <View className={`mx-4 mb-4 p-4 rounded-2xl border ${isDark ? 'bg-[#27272A] border-[#3F3F46]' : 'bg-white border-gray-100'}`}>
+              <Text className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-2`}>Service Name</Text>
               <TextInput
-                className="border border-gray-600 rounded-xl p-4"
-                placeholder="Enter Cost"
-                keyboardType="numeric"
-                value={cost}
-                onChangeText={(text) => {
-                  setCost(text);
-                  setErrors({ ...errors, cost: '' });
+                className={`border border-gray-200 rounded-xl px-4 py-3 text-base ${isDark ? 'text-white' : 'text-[#000000]'}`}
+                placeholder="e.g., Netflix, Electric Bill, Gym"
+                placeholderTextColor= { isDark ? '#FFFFFF' : '#000000' }
+                value={serviceName}
+                onChangeText={setServiceName}
+                returnKeyType="next"
+                onSubmitEditing={() => costRef.current?.focus()}
+              />
+            </View>
+          </SlideInView>
+
+
+
+          {/* Category */}
+          <SlideInView direction="right" duration={250} delay={250}>
+            <View className={`mx-4 mb-4 p-4 rounded-2xl border ${isDark ? 'bg-[#27272A] border-[#3F3F46]' : 'bg-white border-gray-100'}`}>
+              <Text className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-2`}>Category</Text>
+              <SelectList
+                setSelected={setCategory}
+                data={styledCategories}
+                save="key"
+                placeholder="Select a category"
+                defaultOption={defaultCategory}
+                boxStyles={{
+                  borderRadius: 12,
+                  borderColor: isDark ? '#3F3F46' : '#E5E7EB',
+                  paddingVertical: 12,
+                  backgroundColor: isDark ? '#5A5A61' : '#FFFFFF', // Match dropdown for consistency
+                }}
+                inputStyles={{
+                  color: isDark ? '#FFFFFF' : '#000000' 
+                }}
+         
+                dropdownStyles={{
+                  borderRadius: 12,
+                  borderColor: isDark ? '#3F3F46' : '#E5E7EB',
+                  backgroundColor: isDark ? '#5A5A61' : '#FFFFFF'
                 }}
               />
-              <Text className={`text-red-500 text-sm mt-1 ${errors.cost ? '' : 'invisible'}`}>
-                {errors.cost || 'placeholder'}
-              </Text>
-
             </View>
+          </SlideInView>
 
-            <View>
-                <Text className="text-sm  ">Due Date</Text>
+          {/* Cost Type and Amount */}
+          <SlideInView direction="left" duration={250} delay={300}>
+            <View className={`mx-4 mb-4 p-4 rounded-2xl border ${isDark ? 'bg-[#27272A] border-[#3F3F46]' : 'bg-white border-gray-100'}`}>
+              <Text className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-2`}>Cost Type</Text>
+
+              {/* Cost Type Selector */}
+              <View className="flex-row space-x-2 mb-4">
                 <TouchableOpacity
-                  onPress={() => setShow(true)}
-                  className="border border-gray-600 rounded-xl p-4"
+                  onPress={() => setCostType('fixed')}
+                  className={`flex-1 py-3 rounded-xl ${costType === 'fixed' ? 'bg-[#3AABCC]' : 'bg-gray-100'}`}
+                  activeOpacity={0.7}
                 >
-                  <Text className="text-black">
-                    {dueDate?.toLocaleDateString() || 'Select Due Date'}
+                  <Text className={`text-center font-medium ${costType === 'fixed' ? 'text-white' : 'text-gray-700'}`}>
+                    Fixed Cost
                   </Text>
                 </TouchableOpacity>
-                <Text className={`text-red-500 text-sm ${errors.dueDate ? '' : 'invisible'}`}>
-                  {errors.dueDate || 'placeholder'}
-                </Text>
+                <TouchableOpacity
+                  onPress={() => setCostType('variable')}
+                  className={`flex-1 py-3 rounded-xl ${costType === 'variable' ? 'bg-[#3AABCC]' : 'bg-gray-100'}`}
+                  activeOpacity={0.7}
+                >
+                  <Text className={`text-center font-medium ${costType === 'variable' ? 'text-white' : 'text-gray-700'}`}>
+                    Variable Cost
+                  </Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* Cost Input */}
+              {costType === 'fixed' ? (
+                <View>
+                  <Text className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-2`}>Monthly Cost</Text>
+                  <TextInput
+                    ref={costRef}
+                    className={`border border-gray-200 rounded-xl px-4 py-3 text-base ${isDark ? 'text-white' : 'text-gray-900'}`}
+                    placeholder="0.00"
+                    placeholderTextColor= { isDark ? '#FFFFFF' : '#000000' }
+                    value={cost}
+                    onChangeText={setCost}
+                    keyboardType="decimal-pad"
+                    returnKeyType="next"
+                    onSubmitEditing={() => notesRef.current?.focus()}
+                  />
+                </View>
+              ) : (
+                <View>
+                  <Text className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-2`}>Average Monthly Cost</Text>
+                  <TextInput
+                    ref={averageCostRef}
+                    className={`border border-gray-200 rounded-xl px-4 py-3 text-base ${isDark ? 'text-gray-300' : 'text-gray-900'}`}
+                    placeholder="Enter average amount"
+                    placeholderTextColor= { isDark ? '#FFFFFF' : '#000000' }
+                    value={averageCost}
+                    onChangeText={setAverageCost}
+                    keyboardType="decimal-pad"
+                    returnKeyType="next"
+                    onSubmitEditing={() => notesRef.current?.focus()}
+                  />
+                  <Text className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'} mt-1`}>
+                    For bills that vary each month (electricity, water, etc.)
+                  </Text>
+                </View>
+              )}
             </View>
+          </SlideInView>
 
-            <View>
-              <Text className="text-sm mb-1 ">Cycle</Text>
-              <SelectList
-                setSelected={(val : any) => {
-                  setCycle(val);
-                  setErrors({ ...errors, cycle: '' });
-                }}
-                data={cycles}
-                placeholder="Select Cycle"
-                save="key"
-                defaultOption={defaultCycle}
-              />
-              <Text className={`text-red-500 text-sm  ${errors.cycle ? '' : 'invisible'}`}>
-                {errors.cycle || 'placeholder'}
-              </Text>
+          {/* Billing Cycle and Due Date */}
+          <SlideInView direction="right" duration={250} delay={350}>
+            <View className={`mx-4 mb-4 p-4 rounded-2xl border ${isDark ? 'bg-[#27272A] border-[#3F3F46]' : 'bg-white border-gray-100'}`}>
+              <View className="flex-row">
+                {/* Billing Cycle */}
+                <View className="flex-1 mr-3">
+                  <Text className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-2`}>Billing Cycle</Text>
+                  <SelectList
+                    setSelected={setCycle}
+                    data={styledCycles}
+                    save="key"
+                    defaultOption={defaultCycle}
+                    boxStyles={{
+                      borderRadius: 12,
+                      borderColor: isDark ? '#3F3F46' : '#E5E7EB',
+                      paddingVertical: 12,
+                      backgroundColor: isDark ? '#5A5A61' : '#FFFFFF', // Match dropdown for consistency
+                    }}
+                    inputStyles={{
+                      color: isDark ? '#FFFFFF' : '#000000' 
+                    }}
+                    dropdownStyles={{
+                      borderRadius: 12,
+                      borderColor: isDark ? '#3F3F46' : '#E5E7EB',
+                      backgroundColor: isDark ? '#5A5A61' : '#FFFFFF'
+                    }}
+                  />
+                </View>
 
+                {/* Due Date */}
+                <View className="flex-1">
+                  <Text className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-2`}>Due Date</Text>
+                  <TouchableOpacity
+                    onPress={() => setShowDatePicker(true)}
+                    className={`border border-gray-200 rounded-xl px-4 py-3.5 ${isDark ? 'bg-[#27272A]' : 'bg-white'}`}
+                    activeOpacity={0.7}
+                  >
+                    <Text className={`text-base ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                      {dueDate?.toLocaleDateString()}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
             </View>
+          </SlideInView>
 
-
-            <View>
-              <Text className="text-sm mb-1 mt-1">Remind Me</Text>
+          {/* Reminder */}
+          <SlideInView direction="left" duration={250} delay={400}>
+            <View className={`mx-4 mb-4 p-4 rounded-2xl border ${isDark ? 'bg-[#27272A] border-[#3F3F46]' : 'bg-white border-gray-100'}`}>
+              <Text className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-2`}>Reminder</Text>
               <SelectList
-                setSelected={(val : any) => {
-                  setRemindMe(val);
-                  setErrors({ ...errors, remindMe: '' });
-                }}
-                data={reminders}
-                placeholder="Select Reminder"
+                setSelected={setRemindMe}
+                data={styledReminders}
                 save="key"
                 defaultOption={defaultReminder}
-              />
-              <Text className={`text-red-500 text-sm ${errors.remindMe ? '' : 'invisible'}`}>
-                {errors.remindMe || 'placeholder'}
-              </Text>
-
-            </View>
-
-            {/* <View>
-                <Text className="text-sm mb-1 mt-4">Payment Status</Text>
-                <SelectList 
-                setSelected={setPaymentStatus} 
-                data={payments}
-                placeholder="Select Payment Status"
-                save="key" // Ensures it saves the key, not value
-                defaultOption={defaultPayment}
-                 />
-            </View> */}
-
-            <View>
-              <Pressable
-                onPress={() => {
-                  setShowModal(true);
-                  setErrors({ ...errors, selectedColor: '' });
+                boxStyles={{
+                  borderRadius: 12,
+                  borderColor: isDark ? '#3F3F46' : '#E5E7EB',
+                  paddingVertical: 12,
+                  backgroundColor: isDark ? '#5A5A61' : '#FFFFFF', // Match dropdown for consistency
                 }}
-                className="mt-4 px-4 py-3 rounded-lg"
-                style={{ backgroundColor: selectedColor }}
-              >
-                <Text className="text-white text-center font-bold">Selected Color</Text>
-              </Pressable>
-              <Text className={`text-red-500 text-sm  ${errors.selectedColor ? '' : 'invisible'}`}>
-                {errors.selectedColor || 'placeholder'}
-              </Text>
-
-              {/* {color && <Text className="mt-4 text-white  px-4 py-3 rounded-lg text-center"  style={{ backgroundColor: `${color}`}} >Selected Color: {color}</Text>} */}
+                inputStyles={{
+                  color: isDark ? '#FFFFFF' : '#000000' 
+                }}
+                dropdownStyles={{
+                  borderRadius: 12,
+                  borderColor: isDark ? '#3F3F46' : '#E5E7EB',
+                  backgroundColor: isDark ? '#5A5A61' : '#FFFFFF'
+                }}
+              />
             </View>
+          </SlideInView>
 
-            <TouchableOpacity 
-              className="bg-[#3AABCC] rounded-lg p-3 mt-1"
-              onPress={handleEditSubscription}
-            >
-              <Text className="text-white text-center text-xl font-bold">Update Subscription</Text>
-            </TouchableOpacity>
+          {/* Notes */}
+          <SlideInView direction="right" duration={250} delay={450}>
+            <View className={`mx-4 mb-4 p-4 rounded-2xl border ${isDark ? 'bg-[#27272A] border-[#3F3F46]' : 'bg-white border-gray-100'}`}>
+              <Text className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-2`}>Notes (Optional)</Text>
+              <TextInput
+                ref={notesRef}
+                className={`border border-gray-200 rounded-xl px-4 py-3 text-base ${isDark ? 'text-white' : 'text-gray-900'}`}
+                placeholder="Add any additional notes..."
+                placeholderTextColor= { isDark ? '#FFFFFF' : '#000000' }
+                value={notes}
+                onChangeText={setNotes}
+                multiline
+                numberOfLines={3}
+                textAlignVertical="top"
+              />
+            </View>
+          </SlideInView>
 
-             <ColorModal
-              visible={showModal}
-              onClose={() => setShowModal(false)}
-              onSelect={setSelectedColor}
-              defaultColor={subscription.selected_color}
-            />
+          {/* Submit Button */}
+          <SlideInView direction="up" duration={250} delay={500}>
+            <View className="mx-4 mt-6">
+              <TouchableOpacity
+                onPress={handleSubmit}
+                disabled={loading}
+                className={`bg-[#3AABCC] rounded-xl py-4 ${loading ? 'opacity-70' : ''}`}
+                activeOpacity={0.8}
+              >
+                {loading ? (
+                  <ActivityIndicator color="white" />
+                ) : (
+                  <Text className="text-white text-center font-semibold text-lg">
+                    Update Subscription
+                  </Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </SlideInView>
+        </ScrollView>
 
-             {show && (
+        {/* Date Picker Modal */}
+        {showDatePicker && Platform.OS === 'ios' && (
+          <Modal
+            transparent
+            visible={showDatePicker}
+            animationType="slide"
+            onRequestClose={() => setShowDatePicker(false)}
+          >
+            <View className="flex-1 justify-end bg-black/50">
+              <View className={`bg-white rounded-t-3xl ${isDark ? 'bg-[#27272A]' : 'bg-white'}`}>
+                <View className="flex-row justify-between items-center p-4 border-b border-gray-200">
+                  <TouchableOpacity onPress={() => setShowDatePicker(false)}>
+                    <Text className="text-[#3AABCC] text-base">Cancel</Text>
+                  </TouchableOpacity>
+                  <Text className={`text-base font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>Select Due Date</Text>
+                  <TouchableOpacity onPress={() => setShowDatePicker(false)}>
+                    <Text className="text-[#3AABCC] text-base font-semibold">Done</Text>
+                  </TouchableOpacity>
+                </View>
                 <DateTimePicker
-                  value={dueDate!}
+                  value={dueDate ?? new Date()} // fallback if dueDate is null
                   mode="date"
-                  display="default"
-                  onChange={onChangeDate}
+                  display="spinner"
+                  onChange={onDateChange}
+                  minimumDate={new Date()}
+                  style={{ height: 200 }}
                 />
-              )}
-        </View>
-      </View>
-    </>
+              </View>
+            </View>
+          </Modal>
+        )}
+
+        {showDatePicker && Platform.OS === 'android' && (
+          <DateTimePicker
+            value={dueDate ?? new Date()} // fallback if dueDate is null
+            mode="date"
+            display="default"
+            onChange={onDateChange}
+            minimumDate={new Date()}
+          />
+        )}
+
+        {showColorModal && (
+          <View>
+            <ColorModal
+              visible={showColorModal}
+              onClose={() => setShowColorModal(false)}
+              onSelect={setSelectedColor}
+              defaultColor={selectedColor}
+            />
+          </View>
+        )}
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 };
 

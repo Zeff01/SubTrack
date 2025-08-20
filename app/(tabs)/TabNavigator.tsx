@@ -6,39 +6,40 @@ import HomeStack from './HomeStack';
 import SubscriptionStack from './SubscriptionStack';
 import AccountStack from './AccountStack';
 
-// import Calendar from './Calendar';
 import Plus from './(screens)/AddSubscription';
 import PlusButton from '../components/PlusButton';
 
 import LoginScreen from '../(screens)/Login';
-import { useAuth } from '../providers/AuthProvider'; // Import your AuthProvider
-
+import { useAuth } from '../providers/AuthProvider';
+import { useTheme } from '../providers/ThemeProvider';
 
 const TabNavigator = () => {
   const authContext = useAuth();
   const Tab = createBottomTabNavigator();
   const { user, authLoading } = authContext;
+  const { theme } = useTheme();
 
-  // If user does not exist
-  if (!user && authLoading == false) {
+  const isDarkMode = theme === 'dark';
+
+  if (!user && authLoading === false) {
     return <LoginScreen />;
   }
-  
+  console.log(theme);
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarShowLabel: true,
-        tabBarActiveTintColor: '#3AABCC',
-        tabBarInactiveTintColor: '#9ca3af',
+        tabBarActiveTintColor: isDarkMode ? '#4FD1C5' : '#3AABCC', // teal-ish active color in dark
+        tabBarInactiveTintColor: isDarkMode ? '#A0AEC0' : '#9ca3af',
         tabBarLabelStyle: {
           fontSize: 10,
           paddingBottom: 4,
         },
         tabBarStyle: {
-          backgroundColor: '#fff',
+          backgroundColor: isDarkMode ? '#1F2937' : '#fff', // dark: gray-800, light: white
           height: 100,
-          borderTopColor: '#e5e7eb',
+          borderTopColor: isDarkMode ? '#374151' : '#e5e7eb', // dark: gray-700
         },
         tabBarIcon: ({ color, focused }) => {
           let iconName = '';
@@ -61,37 +62,26 @@ const TabNavigator = () => {
       })}
     >
       <Tab.Screen 
-      name="Home" 
-      component={HomeStack}
-      listeners={({ navigation }) => ({
+        name="Home" 
+        component={HomeStack}
+        listeners={({ navigation }) => ({
           tabPress: (e) => {
-            e.preventDefault(); // Prevent default behavior
+            e.preventDefault();
             navigation.navigate('Home', {
-              screen: 'home', // 👈 Navigate to this nested screen
+              screen: 'home',
             });
           },
         })}
       />
-       {/* <Tab.Screen name="Calendar" component={Calendar} /> */}
-      {/*<Tab.Screen
-        name="Plus"
-        component={Plus}
-        options={{
-          tabBarLabel: '',
-          tabBarButton: (props) => (
-            <PlusButton onPress={props.onPress || (() => {})} />
-          ),
-        }}
-      /> */}
       
       <Tab.Screen 
         name="Subscriptions" 
-        component={SubscriptionStack} 
+        component={SubscriptionStack}
         listeners={({ navigation }) => ({
           tabPress: (e) => {
-            e.preventDefault(); // Prevent default behavior
+            e.preventDefault();
             navigation.navigate('Subscriptions', {
-              screen: 'subscriptions', // 👈 Navigate to this nested screen
+              screen: 'subscriptions',
             });
           },
         })}
