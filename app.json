@@ -42,8 +42,9 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "9516b9e2-48db-44cb-a3aa-058d05c0e08d"
+        "projectId": "9b08dfae-3a53-4f98-aafd-08d283e6b3a8"
       }
-    }
+    },
+    "owner": "kindreed"
   }
 }

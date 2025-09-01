@@ -1,19 +1,25 @@
-import { 
-  addDoc, 
-  collection, 
-  deleteDoc, 
-  doc, 
-  getDocs, 
-  getDoc, 
-  updateDoc, 
-  query as firestore_query, 
-  where,
+import * as Notifications from "expo-notifications";
+import { getAuth } from "firebase/auth";
+import {
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
   DocumentData,
+  query as firestore_query,
+  getDoc,
+  getDocs,
   QueryDocumentSnapshot,
-  DocumentReference
+  updateDoc,
+  where,
 } from "firebase/firestore";
 import { db } from "../config/firebase";
-import { Subscription, ServiceResponse, DateInfo, Notification } from "../types";
+import {
+  DateInfo,
+  Notification,
+  ServiceResponse,
+  Subscription,
+} from "../types";
 
 interface UserData {
   email: string;
@@ -27,6 +33,12 @@ interface ProfileUpdateData {
   email?: string;
   username?: string;
   updated_at?: string;
+}
+
+interface PushNotification {
+  title: string;
+  body: string;
+  data?: Record<string, any>;
 }
 
 const getCurrentDateTime = (): string => {
@@ -44,7 +56,9 @@ const getCurrentDateTime = (): string => {
 };
 
 // User Management Functions
-export const createDocumentUser = async (user_info: UserData): Promise<ServiceResponse> => {
+export const createDocumentUser = async (
+  user_info: UserData
+): Promise<ServiceResponse> => {
   try {
     const currentDateTime = getCurrentDateTime();
     const documentData = {
@@ -57,7 +71,7 @@ export const createDocumentUser = async (user_info: UserData): Promise<ServiceRe
     return {
       success: true,
       message: "User document created successfully",
-      data: { id: docRef.id, ...documentData }
+      data: { id: docRef.id, ...documentData },
     };
   } catch (error: any) {
     return {
@@ -67,18 +81,20 @@ export const createDocumentUser = async (user_info: UserData): Promise<ServiceRe
   }
 };
 
-export const retrieveAllDocumentUser = async (): Promise<ServiceResponse<UserData[]>> => {
+export const retrieveAllDocumentUser = async (): Promise<
+  ServiceResponse<UserData[]>
+> => {
   try {
     const querySnapshot = await getDocs(collection(db, "users"));
     const users: UserData[] = [];
-    
+
     querySnapshot.forEach((doc: QueryDocumentSnapshot<DocumentData>) => {
       users.push({ id: doc.id, ...doc.data() } as UserData);
     });
 
     return {
       success: true,
-      data: users
+      data: users,
     };
   } catch (error: any) {
     return {
@@ -88,11 +104,14 @@ export const retrieveAllDocumentUser = async (): Promise<ServiceResponse<UserDat
   }
 };
 
-export const updateDocumentUser = async (docId: string, user_info: Partial<UserData>): Promise<ServiceResponse> => {
+export const updateDocumentUser = async (
+  docId: string,
+  user_info: Partial<UserData>
+): Promise<ServiceResponse> => {
   try {
     const docRef = doc(db, "users", docId);
     const currentDateTime = getCurrentDateTime();
-    
+
     await updateDoc(docRef, {
       ...user_info,
       updated_at: currentDateTime,
@@ -110,7 +129,10 @@ export const updateDocumentUser = async (docId: string, user_info: Partial<UserD
   }
 };
 
-export const updateDocumentUserProfileByUid = async (uid: string, user_info: ProfileUpdateData): Promise<ServiceResponse> => {
+export const updateDocumentUserProfileByUid = async (
+  uid: string,
+  user_info: ProfileUpdateData
+): Promise<ServiceResponse> => {
   try {
     const q = firestore_query(collection(db, "users"), where("uid", "==", uid));
     const querySnapshot = await getDocs(q);
@@ -121,7 +143,7 @@ export const updateDocumentUserProfileByUid = async (uid: string, user_info: Pro
 
     const userDoc = querySnapshot.docs[0];
     const currentDateTime = getCurrentDateTime();
-    
+
     await updateDoc(userDoc.ref, {
       ...user_info,
       updated_at: currentDateTime,
@@ -139,7 +161,9 @@ export const updateDocumentUserProfileByUid = async (uid: string, user_info: Pro
   }
 };
 
-export const deleteDocumentUser = async (docId: string): Promise<ServiceResponse> => {
+export const deleteDocumentUser = async (
+  docId: string
+): Promise<ServiceResponse> => {
   try {
     await deleteDoc(doc(db, "users", docId));
     return {
@@ -156,7 +180,10 @@ export const deleteDocumentUser = async (docId: string): Promise<ServiceResponse
 
 export const checkIfEmailExists = async (email: string): Promise<boolean> => {
   try {
-    const q = firestore_query(collection(db, "users"), where("email", "==", email));
+    const q = firestore_query(
+      collection(db, "users"),
+      where("email", "==", email)
+    );
     const querySnapshot = await getDocs(q);
 
     return !querySnapshot.empty;
@@ -165,9 +192,14 @@ export const checkIfEmailExists = async (email: string): Promise<boolean> => {
   }
 };
 
-export const checkIfUsernameExists = async (username: string): Promise<boolean> => {
+export const checkIfUsernameExists = async (
+  username: string
+): Promise<boolean> => {
   try {
-    const q = firestore_query(collection(db, "users"), where("username", "==", username));
+    const q = firestore_query(
+      collection(db, "users"),
+      where("username", "==", username)
+    );
     const querySnapshot = await getDocs(q);
     return !querySnapshot.empty;
   } catch (error) {
@@ -175,13 +207,18 @@ export const checkIfUsernameExists = async (username: string): Promise<boolean> 
   }
 };
 
-export const getUsernameByEmail = async (email: string): Promise<string | null> => {
+export const getUsernameByEmail = async (
+  email: string
+): Promise<string | null> => {
   try {
     if (!email) {
       throw new Error("Email is undefined or empty");
     }
 
-    const q = firestore_query(collection(db, "users"), where("email", "==", email));
+    const q = firestore_query(
+      collection(db, "users"),
+      where("email", "==", email)
+    );
     const querySnapshot = await getDocs(q);
 
     if (!querySnapshot.empty) {
@@ -196,7 +233,9 @@ export const getUsernameByEmail = async (email: string): Promise<string | null> 
 };
 
 // Subscription Management Functions
-export const createDocumentSubscription = async (subscription_info: Omit<Subscription, 'id' | 'created_at' | 'updated_at'>): Promise<ServiceResponse> => {
+export const createDocumentSubscription = async (
+  subscription_info: Omit<Subscription, "id" | "created_at" | "updated_at">
+): Promise<ServiceResponse> => {
   try {
     const currentDateTime = getCurrentDateTime();
     const documentData = {
@@ -209,7 +248,7 @@ export const createDocumentSubscription = async (subscription_info: Omit<Subscri
     return {
       success: true,
       message: "Subscription created successfully",
-      data: { id: docRef.id, ...documentData }
+      data: { id: docRef.id, ...documentData },
     };
   } catch (error: any) {
     return {
@@ -219,18 +258,20 @@ export const createDocumentSubscription = async (subscription_info: Omit<Subscri
   }
 };
 
-export const retrieveAllDocumentSubscription = async (): Promise<ServiceResponse<Subscription[]>> => {
+export const retrieveAllDocumentSubscription = async (): Promise<
+  ServiceResponse<Subscription[]>
+> => {
   try {
     const querySnapshot = await getDocs(collection(db, "subscriptions"));
     const subscriptions: Subscription[] = [];
-    
+
     querySnapshot.forEach((doc: QueryDocumentSnapshot<DocumentData>) => {
       subscriptions.push({ id: doc.id, ...doc.data() } as Subscription);
     });
 
     return {
       success: true,
-      data: subscriptions
+      data: subscriptions,
     };
   } catch (error: any) {
     return {
@@ -240,19 +281,24 @@ export const retrieveAllDocumentSubscription = async (): Promise<ServiceResponse
   }
 };
 
-export const retrieveAllDocumentSubscriptionSpecificUser = async (user_id: string): Promise<ServiceResponse<Subscription[]>> => {
+export const retrieveAllDocumentSubscriptionSpecificUser = async (
+  user_id: string
+): Promise<ServiceResponse<Subscription[]>> => {
   try {
-    const q = firestore_query(collection(db, "subscriptions"), where("uid", "==", user_id));
+    const q = firestore_query(
+      collection(db, "subscriptions"),
+      where("uid", "==", user_id)
+    );
     const querySnapshot = await getDocs(q);
     const subscriptions: Subscription[] = [];
-    
+
     querySnapshot.forEach((doc: QueryDocumentSnapshot<DocumentData>) => {
       subscriptions.push({ id: doc.id, ...doc.data() } as Subscription);
     });
 
     return {
       success: true,
-      data: subscriptions
+      data: subscriptions,
     };
   } catch (error: any) {
     return {
@@ -263,18 +309,21 @@ export const retrieveAllDocumentSubscriptionSpecificUser = async (user_id: strin
 };
 
 export const retrieveAllDocumentSubscriptionMonthlySpecificUser = async (
-  user_id: string, 
+  user_id: string,
   date_info: DateInfo
 ): Promise<ServiceResponse<Subscription[]>> => {
   try {
-    const q = firestore_query(collection(db, "subscriptions"), where("user_id", "==", user_id));
+    const q = firestore_query(
+      collection(db, "subscriptions"),
+      where("user_id", "==", user_id)
+    );
     const querySnapshot = await getDocs(q);
     const subscriptions: Subscription[] = [];
-    
+
     querySnapshot.forEach((doc: QueryDocumentSnapshot<DocumentData>) => {
       const data = doc.data();
-      const [day, month, year] = data.due_date.split('/').map(Number);
-      
+      const [day, month, year] = data.due_date.split("/").map(Number);
+
       if (month === date_info.month && year === date_info.year) {
         subscriptions.push({ id: doc.id, ...data } as Subscription);
       }
@@ -282,7 +331,7 @@ export const retrieveAllDocumentSubscriptionMonthlySpecificUser = async (
 
     return {
       success: true,
-      data: subscriptions
+      data: subscriptions,
     };
   } catch (error: any) {
     return {
@@ -333,13 +382,13 @@ export const retrieveSpecificDocumentSubscriptionSpecificUser = async (
 };
 
 export const updateDocumentSubscription = async (
-  docId: string, 
+  docId: string,
   subscription_info: Partial<Subscription>
 ): Promise<ServiceResponse> => {
   try {
     const docRef = doc(db, "subscriptions", docId);
     const currentDateTime = getCurrentDateTime();
-    
+
     await updateDoc(docRef, {
       ...subscription_info,
       updated_at: currentDateTime,
@@ -357,7 +406,9 @@ export const updateDocumentSubscription = async (
   }
 };
 
-export const deleteDocumentSubscription = async (docId: string): Promise<ServiceResponse> => {
+export const deleteDocumentSubscription = async (
+  docId: string
+): Promise<ServiceResponse> => {
   try {
     await deleteDoc(doc(db, "subscriptions", docId));
     return {
@@ -374,7 +425,7 @@ export const deleteDocumentSubscription = async (docId: string): Promise<Service
 
 // Notification Management Functions
 export const createDocumentNotification = async (
-  notification_info: Omit<Notification, 'id'>
+  notification_info: Omit<Notification, "id">
 ): Promise<ServiceResponse> => {
   try {
     const currentDateTime = getCurrentDateTime();
@@ -387,7 +438,7 @@ export const createDocumentNotification = async (
     return {
       success: true,
       message: "Notification created successfully",
-      data: { id: docRef.id, ...documentData }
+      data: { id: docRef.id, ...documentData },
     };
   } catch (error: any) {
     return {
@@ -397,4 +448,117 @@ export const createDocumentNotification = async (
   }
 };
 
-// Test code removed - do not add test calls in production files
+export const getSubscriptionDateTrigger = async () => {
+  const auth = getAuth();
+  const user = auth.currentUser;
+
+  if (!user) {
+    console.warn("No user is logged in");
+    return [];
+  }
+
+  const userId = user.uid;
+  const currentDate = getCurrentDateTime().split(" ")[0]; // YYYY-MM-DD
+  const [currYear, currMonth] = currentDate.split("-").map(Number);
+  let reminderDay: string[] = [];
+
+  const response = await retrieveAllDocumentSubscriptionSpecificUser(userId);
+
+  if (response.success && response.data) {
+    console.log("Yes, it's working. User ID:", userId);
+
+    for (let i = 0; i < response.data.length; i++) {
+      const reminderKey = response.data[i].reminder;
+      const dueDateRaw = response.data[i].due_date;
+
+      const [month, day, year] = dueDateRaw.split("/").map(Number);
+      const dueDate = new Date(year, month - 1, day);
+
+      if (reminderKey === "none") continue;
+
+      if (reminderKey === "same_day") {
+        const reminderDate = dueDate.toISOString().split("T")[0];
+        const [rYear, rMonth] = reminderDate.split("-").map(Number);
+        if (rYear === currYear && rMonth === currMonth) {
+          reminderDay.push(reminderDate);
+        }
+        continue;
+      }
+
+      const [amount, unit] = reminderKey.split("_");
+      const numAmount = parseInt(amount, 10);
+      let reminderDate: string | null = null;
+
+      if (unit === "day") {
+        dueDate.setDate(dueDate.getDate() - numAmount);
+        reminderDate = dueDate.toISOString().split("T")[0];
+      }
+
+      if (unit === "week") {
+        dueDate.setDate(dueDate.getDate() - numAmount * 7);
+        reminderDate = dueDate.toISOString().split("T")[0];
+      }
+
+      if (reminderDate) {
+        const [rYear, rMonth] = reminderDate.split("-").map(Number);
+        if (rYear === currYear && rMonth === currMonth) {
+          reminderDay.push(reminderDate);
+        }
+      }
+    }
+  }
+
+  return reminderDay;
+};
+
+export const schedulePushNotification = async (): Promise<{
+  success: boolean;
+  error?: string;
+}> => {
+  try {
+    // Get reminder dates for the currently logged-in user
+    const reminderDates = await getSubscriptionDateTrigger();
+
+    const now = new Date();
+    const todayString = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+
+    for (const reminderDate of reminderDates) {
+      let triggerDate: Date;
+
+      if (reminderDate === todayString) {
+        // Trigger in 5 seconds for "today"
+        triggerDate = new Date(Date.now() + 5000);
+      } else {
+        const [year, month, day] = reminderDate.split("-").map(Number);
+        triggerDate = new Date(year, month - 1, day, 9, 0, 0);
+      }
+
+      const dateTrigger: Notifications.DateTriggerInput = {
+        type: "date",
+        date: triggerDate,
+      };
+
+      // Customize body depending on whether it's today or a future date
+      const bodyMessage =
+        reminderDate === todayString
+          ? "You have a subscription due today!"
+          : `Upcoming subscription due on ${reminderDate}`;
+
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: "Subscription Reminder",
+          body: bodyMessage,
+          data: { reminderDate },
+        },
+        trigger: dateTrigger,
+      });
+    }
+
+    return { success: true };
+  } catch (error: any) {
+    return {
+      success: false,
+      error: error.message ?? "Failed to schedule notification",
+    };
+  }
+};

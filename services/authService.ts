@@ -1,15 +1,17 @@
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
-  updatePassword,
   signOut,
-  updateEmail,
-  sendEmailVerification,
-  User
+  updatePassword,
+  User,
 } from "firebase/auth";
-import { createDocumentUser, checkIfUsernameExists, updateDocumentUserProfileByUid } from "./userService";
 import { auth } from "../config/firebase";
 import { AuthResponse, ServiceResponse } from "../types";
+import {
+  checkIfUsernameExists,
+  createDocumentUser,
+  updateDocumentUserProfileByUid,
+} from "./userService";
 
 interface ProfileInfo {
   email?: string;
@@ -27,7 +29,10 @@ interface LoginInfo {
   password: string;
 }
 
-export const changeProfile = async (current_user: User | null, user_info: ProfileInfo): Promise<ServiceResponse> => {
+export const changeProfile = async (
+  current_user: User | null,
+  user_info: ProfileInfo
+): Promise<ServiceResponse> => {
   try {
     const user = auth.currentUser;
 
@@ -51,7 +56,10 @@ export const changeProfile = async (current_user: User | null, user_info: Profil
   }
 };
 
-export const changePassword = async (current_user: User | null, newPassword: string): Promise<ServiceResponse> => {
+export const changePassword = async (
+  current_user: User | null,
+  newPassword: string
+): Promise<ServiceResponse> => {
   try {
     const user = auth.currentUser;
 
@@ -74,18 +82,22 @@ export const changePassword = async (current_user: User | null, newPassword: str
   }
 };
 
-export const registerUser = async (user_info: RegisterInfo): Promise<AuthResponse> => {
+export const registerUser = async (
+  user_info: RegisterInfo
+): Promise<AuthResponse> => {
   try {
     // Check if the username already exists
     const usernameExists = await checkIfUsernameExists(user_info.username);
     if (usernameExists) {
-      throw new Error("Username already exists. Please choose a different username.");
+      throw new Error(
+        "Username already exists. Please choose a different username."
+      );
     }
 
     // Firebase user creation
     const userCredential = await createUserWithEmailAndPassword(
-      auth, 
-      user_info.email, 
+      auth,
+      user_info.email,
       user_info.password
     );
 
@@ -102,43 +114,52 @@ export const registerUser = async (user_info: RegisterInfo): Promise<AuthRespons
       await signOut(auth);
     }
 
-    return { 
-      success: true, 
-      message: 'User successfully registered',
-      data: userCredential.user
+    return {
+      success: true,
+      message: "User successfully registered",
+      data: userCredential.user,
     };
   } catch (error: any) {
     return {
       success: false,
-      error: error.message || "Registration failed due to a network or server error.",
+      error:
+        error.message ||
+        "Registration failed due to a network or server error.",
     };
   }
 };
 
-export const loginUser = async ({ email, password }: LoginInfo): Promise<AuthResponse> => {
+export const loginUser = async ({
+  email,
+  password,
+}: LoginInfo): Promise<AuthResponse> => {
   try {
     // Debug log to see what's received
     //console.log('authService received:', { email, password: !!password });
-    
+
     // Validate inputs before sending to Firebase
     if (!email || !email.trim()) {
-      throw new Error('Email is required');
+      throw new Error("Email is required");
     }
     if (!password) {
-      throw new Error('Password is required');
+      throw new Error("Password is required");
     }
-    
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    return { 
-        success: true, 
-        message: 'User successfully logged in',        
-        data: userCredential.user 
+
+    const userCredential = await signInWithEmailAndPassword(
+      auth,
+      email,
+      password
+    );
+    return {
+      success: true,
+      message: "User successfully logged in",
+      data: userCredential.user,
     };
   } catch (error: any) {
-    console.log('Firebase auth error:', error);
+    console.log("Firebase auth error:", error);
     return {
-        success: false,
-        error: error.message || "Login failed due to a network or server error.",
+      success: false,
+      error: error.message || "Login failed due to a network or server error.",
     };
   }
 };
