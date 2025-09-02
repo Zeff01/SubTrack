@@ -465,8 +465,6 @@ export const getSubscriptionDateTrigger = async () => {
   const response = await retrieveAllDocumentSubscriptionSpecificUser(userId);
 
   if (response.success && response.data) {
-    console.log("Yes, it's working. User ID:", userId);
-
     for (let i = 0; i < response.data.length; i++) {
       const reminderKey = response.data[i].reminder;
       const dueDateRaw = response.data[i].due_date;
@@ -516,21 +514,27 @@ export const schedulePushNotification = async (): Promise<{
   error?: string;
 }> => {
   try {
-    // Get reminder dates for the currently logged-in user
     const reminderDates = await getSubscriptionDateTrigger();
 
     const now = new Date();
     const todayString = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
 
-    for (const reminderDate of reminderDates) {
+    // Remove duplicate dates
+    const uniqueDates = Array.from(new Set(reminderDates));
+
+    for (const reminderDate of uniqueDates) {
       let triggerDate: Date;
 
       if (reminderDate === todayString) {
-        // Trigger in 5 seconds for "today"
-        triggerDate = new Date(Date.now() + 5000);
+        triggerDate = new Date(Date.now() + 5000); // Fire in 5 seconds if today
       } else {
         const [year, month, day] = reminderDate.split("-").map(Number);
-        triggerDate = new Date(year, month - 1, day, 9, 0, 0);
+        const potentialTrigger = new Date(year, month - 1, day, 9, 0, 0);
+
+        triggerDate =
+          potentialTrigger < now
+            ? new Date(Date.now() + 5000)
+            : potentialTrigger;
       }
 
       const dateTrigger: Notifications.DateTriggerInput = {
@@ -538,7 +542,6 @@ export const schedulePushNotification = async (): Promise<{
         date: triggerDate,
       };
 
-      // Customize body depending on whether it's today or a future date
       const bodyMessage =
         reminderDate === todayString
           ? "You have a subscription due today!"
