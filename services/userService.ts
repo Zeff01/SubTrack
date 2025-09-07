@@ -1,23 +1,24 @@
+import * as Notifications from "expo-notifications";
+import { getAuth } from "firebase/auth";
 import {
   addDoc,
   collection,
   deleteDoc,
   doc,
-  getDocs,
-  getDoc,
-  updateDoc,
-  query as firestore_query,
-  where,
   DocumentData,
+  query as firestore_query,
+  getDoc,
+  getDocs,
   QueryDocumentSnapshot,
-  DocumentReference,
+  updateDoc,
+  where,
 } from "firebase/firestore";
 import { db } from "../config/firebase";
 import {
-  Subscription,
-  ServiceResponse,
   DateInfo,
   Notification,
+  ServiceResponse,
+  Subscription,
 } from "../types";
 
 interface UserData {
@@ -32,6 +33,12 @@ interface ProfileUpdateData {
   email?: string;
   username?: string;
   updated_at?: string;
+}
+
+interface PushNotification {
+  title: string;
+  body: string;
+  data?: Record<string, any>;
 }
 
 const getCurrentDateTime = (): string => {
@@ -417,116 +424,6 @@ export const deleteDocumentSubscription = async (
 };
 
 // Notification Management Functions
-export const createDocumentNotification = async (
-  notification_info: Omit<Notification, "id">
-): Promise<ServiceResponse> => {
-  try {
-    const currentDateTime = getCurrentDateTime();
-    const documentData = {
-      ...notification_info,
-      created_at: currentDateTime,
-    };
-
-    const docRef = await addDoc(collection(db, "notifications"), documentData);
-    return {
-      success: true,
-      message: "Notification created successfully",
-      data: { id: docRef.id, ...documentData },
-    };
-  } catch (error: any) {
-    return {
-      success: false,
-      error: error.message || "Failed to create notification",
-    };
-  }
-};
-
-// Notification Management Functions
-export const createDocumentNotification = async (
-  notification_info: Omit<Notification, "id">
-): Promise<ServiceResponse> => {
-  try {
-    const currentDateTime = getCurrentDateTime();
-    const documentData = {
-      ...notification_info,
-      created_at: currentDateTime,
-    };
-
-    const docRef = await addDoc(collection(db, "notifications"), documentData);
-    return {
-      success: true,
-      message: "Notification created successfully",
-      data: { id: docRef.id, ...documentData },
-    };
-  } catch (error: any) {
-    return {
-      success: false,
-      error: error.message || "Failed to create notification",
-    };
-  }
-};
-
-export const getSubscriptionDateTrigger = async () => {
-  const auth = getAuth();
-  const user = auth.currentUser;
-
-  if (!user) {
-    console.warn("No user is logged in");
-    return [];
-  }
-
-  const userId = user.uid;
-  const currentDate = getCurrentDateTime().split(" ")[0]; // YYYY-MM-DD
-  const [currYear, currMonth] = currentDate.split("-").map(Number);
-  let reminderDay: string[] = [];
-
-  const response = await retrieveAllDocumentSubscriptionSpecificUser(userId);
-
-  if (response.success && response.data) {
-    for (let i = 0; i < response.data.length; i++) {
-      const reminderKey = response.data[i].reminder;
-      const dueDateRaw = response.data[i].due_date;
-
-      const [month, day, year] = dueDateRaw.split("/").map(Number);
-      const dueDate = new Date(year, month - 1, day);
-
-      if (reminderKey === "none") continue;
-
-      if (reminderKey === "same_day") {
-        const reminderDate = dueDate.toISOString().split("T")[0];
-        const [rYear, rMonth] = reminderDate.split("-").map(Number);
-        if (rYear === currYear && rMonth === currMonth) {
-          reminderDay.push(reminderDate);
-        }
-        continue;
-      }
-
-      const [amount, unit] = reminderKey.split("_");
-      const numAmount = parseInt(amount, 10);
-      let reminderDate: string | null = null;
-
-      if (unit === "day") {
-        dueDate.setDate(dueDate.getDate() - numAmount);
-        reminderDate = dueDate.toISOString().split("T")[0];
-      }
-
-      if (unit === "week") {
-        dueDate.setDate(dueDate.getDate() - numAmount * 7);
-        reminderDate = dueDate.toISOString().split("T")[0];
-      }
-
-      if (reminderDate) {
-        const [rYear, rMonth] = reminderDate.split("-").map(Number);
-        if (rYear === currYear && rMonth === currMonth) {
-          reminderDay.push(reminderDate);
-        }
-      }
-    }
-  }
-
-  return reminderDay;
-};
-
 export const schedulePushNotification = async (): Promise<{
   success: boolean;
   error?: string;
@@ -535,16 +432,18 @@ export const schedulePushNotification = async (): Promise<{
     const reminderDates = await getSubscriptionDateTrigger();
 
     const now = new Date();
-    const todayString = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+    const todayString = `${now.getFullYear()}-${String(
+      now.getMonth() + 1
+    ).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
 
-    // Remove duplicate dates
+    // Remove duplicates
     const uniqueDates = Array.from(new Set(reminderDates));
 
     for (const reminderDate of uniqueDates) {
       let triggerDate: Date;
 
       if (reminderDate === todayString) {
-        triggerDate = new Date(Date.now() + 5000); // Fire in 5 seconds if today
+        triggerDate = new Date(Date.now() + 5000);
       } else {
         const [year, month, day] = reminderDate.split("-").map(Number);
         const potentialTrigger = new Date(year, month - 1, day, 9, 0, 0);
@@ -554,11 +453,6 @@ export const schedulePushNotification = async (): Promise<{
             ? new Date(Date.now() + 5000)
             : potentialTrigger;
       }
-
-      const dateTrigger: Notifications.DateTriggerInput = {
-        type: "date",
-        date: triggerDate,
-      };
 
       const bodyMessage =
         reminderDate === todayString
@@ -571,7 +465,7 @@ export const schedulePushNotification = async (): Promise<{
           body: bodyMessage,
           data: { reminderDate },
         },
-        trigger: dateTrigger,
+        trigger: { type: "date", date: triggerDate },
       });
     }
 
