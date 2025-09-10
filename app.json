@@ -1,15 +1,23 @@
 {
   "expo": {
     "name": "MySubTrackApp",
-    "slug": "MySubTrackApp",
+    "slug": "mysubtrackapp",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "mysubtrackapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "owner": "anghelodev",
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.anghelodev.subtrack"
     },
     "android": {
       "adaptiveIcon": {
@@ -17,7 +25,7 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.lladrian.MySubTrackApp"
+      "package": "com.anghelodev.subtrack"
     },
     "web": {
       "bundler": "metro",
@@ -42,9 +50,8 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "9b08dfae-3a53-4f98-aafd-08d283e6b3a8"
+        "projectId": "882a1085-14eb-43ac-ac8e-beeb5b8c0301"
       }
-    },
-    "owner": "kindreed"
+    }
   }
 }

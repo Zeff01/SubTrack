@@ -1,18 +1,19 @@
-import React, { useEffect } from "react";
-import { View, Text } from "react-native";
-import Ionicons from "react-native-vector-icons/Ionicons";
+import useNotification from "@/app/hooks/useNotification";
 import { useNavigation } from "@react-navigation/native";
+import React, { useEffect } from "react";
+import { Text, View } from "react-native";
 import Animated, {
   FadeIn,
   useAnimatedStyle,
   useSharedValue,
-  withSpring,
   withRepeat,
   withSequence,
+  withSpring,
   withTiming,
 } from "react-native-reanimated";
-import { ScaleButton } from "../animated/ScaleButton";
+import Ionicons from "react-native-vector-icons/Ionicons";
 import { useTheme } from "../../providers/ThemeProvider";
+import { ScaleButton } from "../animated/ScaleButton";
 
 interface HeaderProps {
   username: string | null;
@@ -21,12 +22,13 @@ interface HeaderProps {
 const AnimatedIcon = Animated.createAnimatedComponent(Ionicons);
 
 const Header: React.FC<HeaderProps> = ({ username }) => {
+  const { notification } = useNotification();
+  const unreadCount = notification.filter((n) => !n.is_read).length; // count unread
   const navigation = useNavigation();
   const bellRotation = useSharedValue(0);
   const bellScale = useSharedValue(1);
   const { theme } = useTheme();
   const isDark = theme === "dark";
-
 
   useEffect(() => {
     // Subtle bell animation
@@ -87,14 +89,25 @@ const Header: React.FC<HeaderProps> = ({ username }) => {
         </Animated.View>
       </View>
 
-      {/* Notification Bell */}
+      {/* Notification Bell with Badge */}
       <ScaleButton onPress={handleNotificationPress} className="p-2">
         <Animated.View style={bellStyle}>
           <AnimatedIcon
             name="notifications-outline"
             size={30}
-            color={isDark ? "#38BDF8" : "#3AABCC"} // cyan-400 in dark, brand in light
+            color={isDark ? "#38BDF8" : "#3AABCC"}
           />
+
+          {unreadCount > 0 && (
+            <View
+              className="absolute top-0 right-0 w-5 h-5 rounded-full items-center justify-center bg-red-500 border border-white"
+              style={{ transform: [{ translateX: 8 }, { translateY: -4 }] }}
+            >
+              <Text className="text-white text-[10px] font-bold">
+                {unreadCount > 99 ? "99+" : unreadCount}
+              </Text>
+            </View>
+          )}
         </Animated.View>
       </ScaleButton>
     </View>
