@@ -1,19 +1,23 @@
-import React, { useState, useEffect } from 'react';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import React, { useEffect, useState } from 'react';
 import {
-  View, Text, ScrollView, TouchableOpacity, Modal, Alert
+  Alert,
+  Modal,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { useNavigation, useRoute } from '@react-navigation/native';
 import LoginScreen from '../../(screens)/Login';
-import { useAuth } from '../../providers/AuthProvider';
 import {
   deleteDocumentSubscription,
   retrieveSpecificDocumentSubscriptionSpecificUser
 } from '../../../services/userService';
-import { FadeInView } from '../../components/animated/FadeInView';
 import { SlideInView } from '../../components/animated/SlideInView';
-import { cycles, reminders, categories } from '../../modules/constants';
+import { categories, cycles, reminders } from '../../modules/constants';
+import { useAuth } from '../../providers/AuthProvider';
 import { useTheme } from '../../providers/ThemeProvider';
 
 const SubscriptionDetailsScreen = () => {

@@ -1,3 +1,5 @@
+import { FieldValue } from "firebase/firestore";
+
 // User and Auth Types
 export interface User {
   uid: string;
@@ -20,11 +22,10 @@ export interface AuthResponse {
 }
 
 // Subscription Types
-
 export interface Subscription {
   id?: string;
   user_id: string;
-  uid?: string; 
+  uid?: string;
   app_name: string;
   cost: string;
   cost_type?: 'fixed' | 'variable';
@@ -42,6 +43,7 @@ export interface Subscription {
   updated_at?: string;
   created_at?: string;
 };
+
 // export interface Subscription {
 //   id?: string;
 //   user_id: string;
@@ -70,10 +72,12 @@ export interface Notification {
   id: string;
   title: string;
   message: string;
-  date: string;
+  date: string | FieldValue;
   is_read: boolean;
   subscription_id?: string;
+  uid: string;
   type: 'reminder' | 'alert' | 'info';
+  due_date: string | FieldValue;
 }
 
 // Form Types

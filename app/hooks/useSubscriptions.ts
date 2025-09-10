@@ -19,10 +19,11 @@ interface HighlightedDay {
 }
 
 export const useSubscriptions = () => {
-  const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
+  const [subscriptions, setSubscriptions]     = useState<Subscription[]>([]);
   const [highlightedDays, setHighlightedDays] = useState<HighlightedDay[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading]                 = useState(true);
+  const [error, setError]                     = useState<string | null>(null);
+  const [initialLoad, setInitialLoad]         = useState(false);
 
   const generateHighlightedDays = (subscriptions: Subscription[], currentDate: moment.Moment): HighlightedDay[] => {
     const daysMap = new Map<
@@ -245,6 +246,67 @@ export const useSubscriptions = () => {
   };
 };
 
+const getUpcomingSubscriptions = (): Array<Subscription>=> {
+  const today = moment().startOf('day');
+  const endDate = today.clone().add(15, 'days').endOf('day');
+
+  const upcomingSubs: Subscription[] = [];
+
+  subscriptions.forEach((sub) => {
+    const baseDate = moment(sub.due_date, 'MM/DD/YYYY');
+    if (!baseDate.isValid()) return;
+
+    const cycle = sub.cycle.toLowerCase();
+    const cycleMap: { [key: string]: { unit: moment.unitOfTime.DurationConstructor; step: number } | null } = {
+      daily: { unit: 'day', step: 1 },
+      weekly: { unit: 'week', step: 1 },
+      biweekly: { unit: 'week', step: 2 },
+      semimonthly: null,
+      monthly: { unit: 'month', step: 1 },
+      bimonthly: { unit: 'month', step: 2 },
+      quarterly: { unit: 'month', step: 3 },
+      semiannually: { unit: 'month', step: 6 },
+      yearly: { unit: 'year', step: 1 },
+    };
+
+    let nextOccurrence: moment.Moment | null = null;
+
+    if (cycle === 'semimonthly') {
+      const current = today.clone().startOf('month');
+      const first = current.clone().date(1);
+      const fifteenth = current.clone().date(15);
+
+      if (first.isSameOrAfter(today) && first.isSameOrBefore(endDate)) {
+        nextOccurrence = first;
+      } else if (fifteenth.isSameOrAfter(today) && fifteenth.isSameOrBefore(endDate)) {
+        nextOccurrence = fifteenth;
+      }
+    } else {
+      const config = cycleMap[cycle];
+      if (!config) return;
+
+      const { unit, step } = config;
+      let current = baseDate.clone();
+
+      while (current.isBefore(today)) {
+        current.add(step, unit);
+      }
+
+      if (current.isSameOrBefore(endDate)) {
+        nextOccurrence = current;
+      }
+    }
+
+    if (nextOccurrence) {
+      upcomingSubs.push({ ...sub, due_date: nextOccurrence.format('MM/DD/YYYY') });
+    }
+  });
+
+  return upcomingSubs;
+};
+
+
+
   const fetchSubscriptions = useCallback(async (userId: string) => {
     if (!userId) return;
     
@@ -264,6 +326,8 @@ export const useSubscriptions = () => {
       setError(error.message || 'Failed to fetch subscriptions');
     } finally {
       setLoading(false);
+      if(!initialLoad)
+        setInitialLoad(true);
     }
   }, []);
 
@@ -280,13 +344,20 @@ export const useSubscriptions = () => {
   );
 
   return {
+  /** Tracks whether the initial data load has been completed.
+   * True if the app already loaded the initial data.
+   * False if the app just started and the states are empty
+   */
+    initialLoad,
     subscriptions,
     highlightedDays,
     loading,
     error,
     getTotalMonthlyCost,
     getYearlyStats,
-    refetch: fetchSubscriptions
+    refetch: fetchSubscriptions,
+
+    getUpcomingSubscriptions
   };
 };
 

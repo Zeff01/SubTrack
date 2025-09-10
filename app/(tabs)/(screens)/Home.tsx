@@ -1,40 +1,51 @@
-import React, { useState } from 'react';
-import { View, ScrollView, Text, Platform } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import moment from 'moment';
+import React, { useState } from 'react';
+import { ActivityIndicator, Platform, ScrollView, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { useAuth } from '../../providers/AuthProvider';
 import { useSubscriptions } from '../../hooks/useSubscriptions';
 import { useUsername } from '../../hooks/useUsername';
+import { useAuth } from '../../providers/AuthProvider';
 
+import CalendarView from '../../components/home/CalendarView';
 import Header from '../../components/home/Header';
 import MonthlyPayment from '../../components/home/MonthlyPayment';
-import UpcomingPayment from '../../components/home/UpcomingPayment';
-import CalendarView from '../../components/home/CalendarView';
 import SubscriptionItem from '../../components/home/SubscriptionItem';
+import UpcomingPayment from '../../components/home/UpcomingPayment';
 
 import { Subscription } from '../../../types';
 import { FadeInView } from '../../components/animated/FadeInView';
 import { SlideInView } from '../../components/animated/SlideInView';
 
-import Loading from '../../components/common/Loading';
 import ErrorMessage from '../../components/common/ErrorMessage';
 
+import Loading from '@/app/components/common/Loading';
+import { generateNotifications } from '@/services/notificationService';
 import { useTheme } from '../../providers/ThemeProvider';
 
 const HomeScreen = () => {
   const navigation = useNavigation();
   const { user } = useAuth();
+  //@ts-ignore
   const { username } = useUsername(user);
 
-  const { subscriptions, highlightedDays, loading, error, getTotalMonthlyCost, getYearlyStats } =
+  const { initialLoad, subscriptions, highlightedDays, loading, error, getTotalMonthlyCost, getYearlyStats, getUpcomingSubscriptions } =
     useSubscriptions();
+
 
   const [currentDateMonth, setCurrentMonth] = useState(moment());
   const [currentDate, setCurrentDate] = useState(moment());
   const [selectedDay, setSelectedDay] = useState<string | null>(moment().format('YYYY-MM-DD'));
   const [currentDay, setCurrentDay] = useState<moment.Moment>(moment());
+
+  //Generaten notification for the user
+  React.useEffect(() => {
+    if (user && subscriptions.length) {
+      const currentSubs = getUpcomingSubscriptions();
+      generateNotifications(user.uid, currentSubs );
+    }
+  }, [user, subscriptions]);
 
   const { theme } = useTheme();
   const isDark = theme === 'dark';
@@ -86,7 +97,7 @@ const HomeScreen = () => {
     });
   };
 
-  if (loading) {
+  if (!initialLoad) {
     return <Loading message="Loading subscriptions..." />;
   }
 
@@ -126,7 +137,7 @@ const HomeScreen = () => {
           </View>
         </SlideInView>
 
-        {/* Upcoming Payments */}
+      {/* Upcoming Payments */}
         {upcomingPayments.length > 0 && (
           <FadeInView delay={200} duration={300}>
             <View className="mb-4">
@@ -245,6 +256,14 @@ const HomeScreen = () => {
             </View>
           </FadeInView>
         )}
+
+        { loading && initialLoad && (
+          <View className="flex-1 items-center justify-center py-2">
+            <ActivityIndicator size="large" color="#3AABCC" />
+            <Text className={`${isDark ? 'text-gray-400' : 'text-gray-500'} mt-2`}>Loading subscriptions...</Text>
+          </View>
+        )}
+
       </ScrollView>
     </SafeAreaView>
   );

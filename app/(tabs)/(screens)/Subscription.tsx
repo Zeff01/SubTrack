@@ -1,79 +1,76 @@
-import React, { useState, useCallback } from 'react';
+import { FontAwesome } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+import React, { useState } from 'react';
 import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  TextInput,
   ActivityIndicator,
   Platform,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
+import * as Animatable from 'react-native-animatable';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { FontAwesome } from '@expo/vector-icons';
-import * as Animatable from 'react-native-animatable';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
-import { onAuthStateChanged } from 'firebase/auth';
 
-import { auth } from '../../../config/firebase';
-import { retrieveAllDocumentSubscriptionSpecificUser } from '../../../services/userService';
+import useSubscriptions from '@/app/hooks/useSubscriptions';
 import { FadeInView } from '../../components/animated/FadeInView';
 import { SlideInView } from '../../components/animated/SlideInView';
 import { useTheme } from '../../providers/ThemeProvider';
 
-type Subscription = {
-  id?: string;
-  uid?: string;
-  user_id?: string;
-  app_name: string;
-  cost: string;
-  cost_type?: 'fixed' | 'variable';
-  average_cost?: string;
-  cycle: string;
-  due_date: string;
-  reminder?: string;
-  remind_me?: string;
-  color?: string;
-  selected_color?: string;
-  category?: string;
-  icon?: string;
-  notes?: string;
-  status?: 'active' | 'paused' | 'cancelled';
-  updated_at?: string;
-  created_at?: string;
-};
+//This types already appears in the types/index.ts 
+// type Subscription = {
+//   id?: string;
+//   uid?: string;
+//   user_id?: string;
+//   app_name: string;
+//   cost: string;
+//   cost_type?: 'fixed' | 'variable';
+//   average_cost?: string;
+//   cycle: string;
+//   due_date: string;
+//   reminder?: string;
+//   remind_me?: string;
+//   color?: string;
+//   selected_color?: string;
+//   category?: string;
+//   icon?: string;
+//   notes?: string;
+//   status?: 'active' | 'paused' | 'cancelled';
+//   updated_at?: string;
+//   created_at?: string;
+// };
 
 const SubscriptionScreen = () => {
   const navigation = useNavigation();
-  const [loading, setLoading] = useState(true);
-  const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const { theme } = useTheme();
   const isDark = theme === 'dark';
 
-  useFocusEffect(
-    useCallback(() => {
-      const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-        if (firebaseUser?.uid) {
-          fetchSubscriptions(firebaseUser.uid);
-        }
-      });
-
-      return () => unsubscribe();
-    }, [])
-  );
-
-  const fetchSubscriptions = async (user_id: string) => {
-    try {
-      setLoading(true);
-      const res = await retrieveAllDocumentSubscriptionSpecificUser(user_id);
-      setSubscriptions(res.data as Subscription[]);
-    } catch (error) {
-      console.error('Failed to fetch subscriptions:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { initialLoad, loading, subscriptions } = useSubscriptions();
+  //this code is commented because it already appears in useSubscriptions.ts hook
+  // useFocusEffect(
+  //   useCallback(() => {
+  //     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+  //       if (firebaseUser?.uid) {
+  //         fetchSubscriptions(firebaseUser.uid);
+  //       }
+  //     });
+  //     return () => unsubscribe();
+  //   }, [])
+  // );
+  // const fetchSubscriptions = async (user_id: string) => {
+  //   try {
+  //     setLoading(true);
+  //     const res = await retrieveAllDocumentSubscriptionSpecificUser(user_id);
+  //     setSubscriptions(res.data as Subscription[]);
+  //   } catch (error) {
+  //     console.error('Failed to fetch subscriptions:', error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   const formatDueDate2 = (dateStr: string): string => {
     const [month, day, year] = dateStr.split('/');
@@ -125,7 +122,7 @@ const SubscriptionScreen = () => {
         </SlideInView>
 
         {/* Subscriptions List */}
-        {loading ? (
+        { !initialLoad ? (
           <View className="flex-1 items-center justify-center py-20">
             <ActivityIndicator size="large" color="#3AABCC" />
             <Text className={`${isDark ? 'text-gray-400' : 'text-gray-500'} mt-2`}>Loading subscriptions...</Text>
@@ -200,6 +197,13 @@ const SubscriptionScreen = () => {
                 </TouchableOpacity>
               </SlideInView>
             ))}
+
+            { loading && (
+              <View className="flex-1 items-center justify-center py-2">
+                <ActivityIndicator size="large" color="#3AABCC" />
+                <Text className={`${isDark ? 'text-gray-400' : 'text-gray-500'} mt-2`}>Loading subscriptions...</Text>
+              </View>
+            )}
           </View>
         )}
       </ScrollView>
