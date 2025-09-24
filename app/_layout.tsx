@@ -1,24 +1,28 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack } from 'expo-router';
+import 'react-native-gesture-handler';
+import '../global.css'; // For Tailwind (NativeWind)
+import React from 'react';
+import { NavigationContainer } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
-import 'react-native-reanimated';
+import { Slot } from 'expo-router';
 
-import { useColorScheme } from '@/hooks/use-color-scheme';
 
-export const unstable_settings = {
-  anchor: '(tabs)',
-};
+import RootNavigator from './navigators/RootNavigator';
+import AuthProvider from './providers/AuthProvider';
+import ThemeProvider from './providers/ThemeProvider';
 
-export default function RootLayout() {
-  const colorScheme = useColorScheme();
+
+
+export default function App() {
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+        <>
+            <ThemeProvider>
+              <AuthProvider>
+                {/* <Slot />  */}
+                <RootNavigator />
+                {/* <StatusBar style="auto" /> */}
+              </AuthProvider>
+            </ThemeProvider>
+        </>
   );
 }
