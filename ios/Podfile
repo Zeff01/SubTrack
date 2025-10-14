@@ -13,9 +13,7 @@ install! 'cocoapods',
 
 use_modular_headers!
 
-# Fix for Firebase Swift 6 compatibility
-pod 'FirebaseCore', '~> 10.24'
-pod 'FirebaseAuth', '~> 10.24'
+# Firebase will use versions from React Native Firebase
 
 prepare_react_native_project!
 
@@ -55,6 +53,20 @@ target 'SubTrack' do
       :mac_catalyst_enabled => false,
       :ccache_enabled => podfile_properties['apple.ccacheEnabled'] == 'true',
     )
+
+    # Fix Swift version for Firebase compatibility
+    installer.pods_project.targets.each do |target|
+      target.build_configurations.each do |config|
+        config.build_settings['SWIFT_VERSION'] = '5.0'
+        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.1'
+        
+        # Specific Firebase Swift fixes
+        if target.name.include?('Firebase')
+          config.build_settings['SWIFT_VERSION'] = '5.0'
+          config.build_settings['OTHER_SWIFT_FLAGS'] = '-D SWIFT_PACKAGE'
+        end
+      end
+    end
 
     # This is necessary for Xcode 14, because it signs resource bundles by default
     # when building for devices.
