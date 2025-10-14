@@ -11,10 +11,6 @@ platform :ios, podfile_properties['ios.deploymentTarget'] || '17.0'
 install! 'cocoapods',
   :deterministic_uuids => false
 
-use_modular_headers!
-
-# Firebase will use versions from React Native Firebase
-
 prepare_react_native_project!
 
 target 'SubTrack' do
@@ -53,70 +49,6 @@ target 'SubTrack' do
       :mac_catalyst_enabled => false,
       :ccache_enabled => podfile_properties['apple.ccacheEnabled'] == 'true',
     )
-
-    # Fix Swift version for Firebase compatibility
-    installer.pods_project.targets.each do |target|
-      target.build_configurations.each do |config|
-        config.build_settings['SWIFT_VERSION'] = '5.7'
-        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '17.0'
-        
-        # Specific Firebase Swift fixes
-        if target.name.include?('Firebase')
-          config.build_settings['SWIFT_VERSION'] = '5.7'
-          config.build_settings['OTHER_SWIFT_FLAGS'] = '-D SWIFT_PACKAGE'
-        end
-      end
-    end
-
-    # Fix module map conflicts
-    def fix_module_maps
-      react_runtime_jsitooling = File.join(__dir__, 'Pods/Headers/Public/react_runtime/React-jsitooling.modulemap')
-      if File.exist?(react_runtime_jsitooling)
-        File.write(react_runtime_jsitooling, <<~MODULEMAP
-          module react_jsitooling {
-            header "React-jsitooling-umbrella.h"
-            export *
-          }
-        MODULEMAP
-        )
-      end
-
-      react_runtime_core = File.join(__dir__, 'Pods/Headers/Public/react_runtime/React-RuntimeCore.modulemap')
-      if File.exist?(react_runtime_core)
-        File.write(react_runtime_core, <<~MODULEMAP
-          module react_runtime {
-            umbrella header "React-RuntimeCore-umbrella.h"
-            export *
-            module * { export * }
-          }
-        MODULEMAP
-        )
-      end
-
-      react_common = File.join(__dir__, 'Pods/Headers/Public/ReactCommon/ReactCommon.modulemap')
-      if File.exist?(react_common)
-        File.write(react_common, <<~MODULEMAP
-          module ReactCommon {
-            header "ReactCommon-umbrella.h"
-            export *
-          }
-        MODULEMAP
-        )
-      end
-
-      react_runtime_apple = File.join(__dir__, 'Pods/Headers/Public/ReactCommon/React-RuntimeApple.modulemap')
-      if File.exist?(react_runtime_apple)
-        File.write(react_runtime_apple, <<~MODULEMAP
-          module React_RuntimeApple {
-            umbrella header "React-RuntimeApple-umbrella.h"
-            export *
-          }
-        MODULEMAP
-        )
-      end
-    end
-
-    fix_module_maps
 
     # This is necessary for Xcode 14, because it signs resource bundles by default
     # when building for devices.
