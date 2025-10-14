@@ -4,7 +4,7 @@
     "slug": "subtrack",
     "version": "2.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/SubtrackIcon.png",
     "scheme": "subtrack",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -65,7 +65,7 @@
       [
         "expo-notifications",
         {
-          "icon": "./assets/images/icon.png",
+          "icon": "./assets/SubtrackIcon.png",
           "color": "#3AABCC",
           "defaultChannel": "default"
         }
