@@ -35,6 +35,11 @@ yarn-error.*
 .env.local
 .env*.local
 
+# deployment credentials
+google-service-account.json
+*.keystore
+*.jks
+
 # typescript
 *.tsbuildinfo
 

@@ -5,6 +5,8 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import HomeStack from './HomeStack';
 import SubscriptionStack from './SubscriptionStack';
 import AccountStack from './AccountStack';
+import Calendar from './Calendar';
+import AnalyticsScreen from './(screens)/Analytics';
 
 import Plus from './(screens)/AddSubscription';
 import PlusButton from '../components/PlusButton';
@@ -50,6 +52,9 @@ const TabNavigator = () => {
             case 'Calendar':
               iconName = focused ? 'calendar' : 'calendar-outline';
               break;
+            case 'Analytics':
+              iconName = focused ? 'analytics' : 'analytics-outline';
+              break;
             case 'Subscriptions':
               iconName = focused ? 'list' : 'list-outline';
               break;
@@ -73,6 +78,10 @@ const TabNavigator = () => {
           },
         })}
       />
+      
+      <Tab.Screen name="Calendar" component={Calendar} />
+      
+      <Tab.Screen name="Analytics" component={AnalyticsScreen} />
       
       <Tab.Screen 
         name="Subscriptions" 

@@ -285,15 +285,36 @@ export const retrieveAllDocumentSubscriptionSpecificUser = async (
   user_id: string
 ): Promise<ServiceResponse<Subscription[]>> => {
   try {
-    const q = firestore_query(
-      collection(db, "subscriptions"),
-      where("uid", "==", user_id)
+    // Try both field names for backward compatibility
+    const queries = [
+      firestore_query(collection(db, "subscriptions"), where("uid", "==", user_id)),
+      firestore_query(collection(db, "subscriptions"), where("user_id", "==", user_id))
+    ];
+    
+    const [uidQuery, userIdQuery] = await Promise.all(
+      queries.map(q => getDocs(q))
     );
-    const querySnapshot = await getDocs(q);
+    
     const subscriptions: Subscription[] = [];
+    const processedIds = new Set<string>();
 
-    querySnapshot.forEach((doc: QueryDocumentSnapshot<DocumentData>) => {
-      subscriptions.push({ id: doc.id, ...doc.data() } as Subscription);
+    // Process both query results and remove duplicates
+    [uidQuery, userIdQuery].forEach(querySnapshot => {
+      querySnapshot.forEach((doc: QueryDocumentSnapshot<DocumentData>) => {
+        if (!processedIds.has(doc.id)) {
+          const data = doc.data();
+          // Standardize field names
+          const standardizedData = {
+            ...data,
+            uid: data.uid || data.user_id || user_id,
+            user_id: data.user_id || data.uid || user_id,
+            color: data.color || data.selected_color,
+            reminder: data.reminder || data.remind_me,
+          };
+          subscriptions.push({ id: doc.id, ...standardizedData } as Subscription);
+          processedIds.add(doc.id);
+        }
+      });
     });
 
     return {
@@ -424,19 +445,29 @@ export const deleteDocumentSubscription = async (
 };
 
 // Notification Management Functions
-export const schedulePushNotification = async (): Promise<{
+export const schedulePushNotification = async (userId: string): Promise<{
   success: boolean;
   error?: string;
 }> => {
   try {
-    const reminderDates = await getSubscriptionDateTrigger();
+    // Get user's subscriptions to determine reminder dates
+    const subscriptionsRes = await retrieveAllDocumentSubscriptionSpecificUser(userId);
+    
+    if (!subscriptionsRes.success || !subscriptionsRes.data) {
+      return { success: false, error: 'No subscriptions found' };
+    }
 
     const now = new Date();
     const todayString = `${now.getFullYear()}-${String(
       now.getMonth() + 1
     ).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
 
-    // Remove duplicates
+    // Extract unique reminder dates from subscriptions
+    const reminderDates = subscriptionsRes.data.map(sub => {
+      const dueDate = new Date(sub.due_date);
+      return `${dueDate.getFullYear()}-${String(dueDate.getMonth() + 1).padStart(2, "0")}-${String(dueDate.getDate()).padStart(2, "0")}`;
+    });
+
     const uniqueDates = Array.from(new Set(reminderDates));
 
     for (const reminderDate of uniqueDates) {
@@ -465,7 +496,7 @@ export const schedulePushNotification = async (): Promise<{
           body: bodyMessage,
           data: { reminderDate },
         },
-        trigger: { type: "date", date: triggerDate },
+        trigger: triggerDate,
       });
     }
 
@@ -474,6 +505,204 @@ export const schedulePushNotification = async (): Promise<{
     return {
       success: false,
       error: error.message ?? "Failed to schedule notification",
+    };
+  }
+};
+
+// Real Notification Management Functions
+export const createDocumentNotification = async (
+  notification_info: Omit<Notification, "id" | "created_at" | "updated_at">
+): Promise<ServiceResponse> => {
+  try {
+    const currentDateTime = getCurrentDateTime();
+    const documentData = {
+      ...notification_info,
+      created_at: currentDateTime,
+      updated_at: currentDateTime,
+    };
+
+    const docRef = await addDoc(collection(db, "notifications"), documentData);
+    return {
+      success: true,
+      message: "Notification created successfully",
+      data: { id: docRef.id, ...documentData },
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      error: error.message || "Failed to create notification",
+    };
+  }
+};
+
+export const retrieveAllDocumentNotificationSpecificUser = async (
+  user_id: string
+): Promise<ServiceResponse<Notification[]>> => {
+  try {
+    const q = firestore_query(
+      collection(db, "notifications"),
+      where("uid", "==", user_id)
+    );
+    const querySnapshot = await getDocs(q);
+    const notifications: Notification[] = [];
+
+    querySnapshot.forEach((doc: QueryDocumentSnapshot<DocumentData>) => {
+      notifications.push({ id: doc.id, ...doc.data() } as Notification);
+    });
+
+    // Sort by date (newest first)
+    notifications.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+    return {
+      success: true,
+      data: notifications,
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      error: error.message || "Failed to retrieve notifications",
+    };
+  }
+};
+
+export const markNotificationAsRead = async (
+  notificationId: string
+): Promise<ServiceResponse> => {
+  try {
+    const docRef = doc(db, "notifications", notificationId);
+    const currentDateTime = getCurrentDateTime();
+
+    await updateDoc(docRef, {
+      is_read: 1,
+      updated_at: currentDateTime,
+    });
+
+    return {
+      success: true,
+      message: "Notification marked as read",
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      error: error.message || "Failed to mark notification as read",
+    };
+  }
+};
+
+export const markAllNotificationsAsRead = async (
+  user_id: string
+): Promise<ServiceResponse> => {
+  try {
+    const q = firestore_query(
+      collection(db, "notifications"),
+      where("uid", "==", user_id),
+      where("is_read", "==", 0)
+    );
+    const querySnapshot = await getDocs(q);
+    const currentDateTime = getCurrentDateTime();
+
+    const updatePromises = querySnapshot.docs.map((docSnapshot) =>
+      updateDoc(docSnapshot.ref, {
+        is_read: 1,
+        updated_at: currentDateTime,
+      })
+    );
+
+    await Promise.all(updatePromises);
+
+    return {
+      success: true,
+      message: "All notifications marked as read",
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      error: error.message || "Failed to mark all notifications as read",
+    };
+  }
+};
+
+export const deleteNotification = async (
+  notificationId: string
+): Promise<ServiceResponse> => {
+  try {
+    await deleteDoc(doc(db, "notifications", notificationId));
+    return {
+      success: true,
+      message: "Notification deleted successfully",
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      error: error.message || "Failed to delete notification",
+    };
+  }
+};
+
+export const getUnreadNotificationCount = async (
+  user_id: string
+): Promise<ServiceResponse<number>> => {
+  try {
+    const q = firestore_query(
+      collection(db, "notifications"),
+      where("uid", "==", user_id),
+      where("is_read", "==", 0)
+    );
+    const querySnapshot = await getDocs(q);
+
+    return {
+      success: true,
+      data: querySnapshot.size,
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      error: error.message || "Failed to get unread notification count",
+      data: 0,
+    };
+  }
+};
+
+// Enhanced notification creation for subscription reminders
+export const createSubscriptionReminder = async (
+  user_id: string,
+  subscription: Subscription,
+  reminderType: 'due_today' | 'due_tomorrow' | 'overdue'
+): Promise<ServiceResponse> => {
+  try {
+    const messages = {
+      due_today: `Your ${subscription.app_name} subscription is due today!`,
+      due_tomorrow: `Your ${subscription.app_name} subscription is due tomorrow.`,
+      overdue: `Your ${subscription.app_name} subscription is overdue!`,
+    };
+
+    const titles = {
+      due_today: 'Payment Due Today',
+      due_tomorrow: 'Payment Reminder',
+      overdue: 'Payment Overdue',
+    };
+
+    const types = {
+      due_today: 'payment_due' as const,
+      due_tomorrow: 'reminder' as const,
+      overdue: 'overdue' as const,
+    };
+
+    const notification = {
+      uid: user_id,
+      title: titles[reminderType],
+      message: messages[reminderType],
+      date: new Date().toISOString(),
+      is_read: 0,
+      subscription_id: subscription.id,
+      type: types[reminderType],
+    };
+
+    return await createDocumentNotification(notification);
+  } catch (error: any) {
+    return {
+      success: false,
+      error: error.message || "Failed to create subscription reminder",
     };
   }
 };

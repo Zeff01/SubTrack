@@ -67,13 +67,17 @@ export interface CostHistoryEntry {
 
 // Notification Types
 export interface Notification {
-  id: string;
+  id?: string;
+  uid: string; // User ID
+  notif_id?: string; // External notification ID
   title: string;
   message: string;
   date: string;
-  is_read: boolean;
+  is_read: number; // 0 = unread, 1 = read (for Firebase compatibility)
   subscription_id?: string;
-  type: 'reminder' | 'alert' | 'info';
+  type: 'reminder' | 'payment_due' | 'overdue' | 'info';
+  created_at?: string;
+  updated_at?: string;
 }
 
 // Form Types

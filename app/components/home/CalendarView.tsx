@@ -112,7 +112,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
                           <View className="absolute top-1 left-0 right-0 flex-row justify-center">
                             {hl.icons && hl.icons.length > 0 ? (
                               <>
-                                {hl.icons.slice(0, 2).map((icon, idx) => (
+                                {hl.icons && hl.icons.slice(0, 2).map((icon, idx) => (
                                   <View
                                     key={idx}
                                     style={{
@@ -131,7 +131,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
                                     <Text style={{ fontSize: 10 }}>{icon}</Text>
                                   </View>
                                 ))}
-                                {hl.icons.length > 2 && (
+                                {hl.icons && hl.icons.length > 2 && (
                                   <View
                                     style={{
                                       backgroundColor: "#374151",
@@ -152,7 +152,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
                                         fontWeight: "bold",
                                       }}
                                     >
-                                      +{hl.icons.length - 2}
+                                      +{(hl.icons?.length || 0) - 2}
                                     </Text>
                                   </View>
                                 )}

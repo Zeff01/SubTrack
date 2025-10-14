@@ -9,7 +9,8 @@ import LoginScreen from '../../(screens)/Login';
 import { useAuth } from '../../providers/AuthProvider';
 import {
   deleteDocumentSubscription,
-  retrieveSpecificDocumentSubscriptionSpecificUser
+  retrieveSpecificDocumentSubscriptionSpecificUser,
+  updateDocumentSubscription
 } from '../../../services/userService';
 import { FadeInView } from '../../components/animated/FadeInView';
 import { SlideInView } from '../../components/animated/SlideInView';
@@ -60,6 +61,49 @@ const SubscriptionDetailsScreen = () => {
                 },
               }),
     }]);
+  };
+
+  const handleStatusChange = async (newStatus: 'active' | 'paused' | 'cancelled') => {
+    try {
+      const response = await updateDocumentSubscription(subscription.id, { status: newStatus });
+      
+      if (response.success) {
+        // Update local state
+        setSubscriptionData((prev: any) => ({ ...prev, status: newStatus }));
+        
+        const statusMessages = {
+          active: 'Subscription has been resumed',
+          paused: 'Subscription has been paused',
+          cancelled: 'Subscription has been cancelled'
+        };
+        
+        Alert.alert('Status Updated', statusMessages[newStatus]);
+      } else {
+        Alert.alert('Error', response.error || 'Failed to update subscription status');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to update subscription status');
+    }
+  };
+
+  const showStatusOptions = () => {
+    const currentStatus = subscriptionData?.status ?? subscription?.status ?? 'active';
+    
+    const options: any[] = [
+      { text: 'Cancel', style: 'cancel' }
+    ];
+
+    if (currentStatus === 'paused') {
+      options.unshift({ text: 'Resume', onPress: () => handleStatusChange('active') });
+      options.unshift({ text: 'Cancel Subscription', onPress: () => handleStatusChange('cancelled'), style: 'destructive' });
+    } else if (currentStatus === 'active') {
+      options.unshift({ text: 'Pause', onPress: () => handleStatusChange('paused') });
+      options.unshift({ text: 'Cancel Subscription', onPress: () => handleStatusChange('cancelled'), style: 'destructive' });
+    } else if (currentStatus === 'cancelled') {
+      options.unshift({ text: 'Reactivate', onPress: () => handleStatusChange('active') });
+    }
+
+    Alert.alert('Change Status', 'What would you like to do with this subscription?', options);
   };
 
   return (
@@ -224,9 +268,10 @@ const SubscriptionDetailsScreen = () => {
 
           {/* Action Buttons */}
 <SlideInView direction="up" duration={250} delay={500}>
-  <View className="mt-6">
+  <View className="mt-6 space-y-3">
+    {/* Edit Button */}
     <TouchableOpacity
-      className="bg-[#3AABCC] rounded-xl py-4 w-full shadow-sm mb-6"
+      className="bg-[#3AABCC] rounded-xl py-4 w-full shadow-sm"
       onPress={() => (navigation as any).navigate('edit_subscription', {
         subscription: subscriptionData ?? subscription
       })}
@@ -238,6 +283,42 @@ const SubscriptionDetailsScreen = () => {
       </View>
     </TouchableOpacity>
 
+    {/* Status Management Button */}
+    <TouchableOpacity
+      className={`${
+        (subscriptionData?.status ?? subscription?.status) === 'paused'
+          ? 'bg-green-500'
+          : (subscriptionData?.status ?? subscription?.status) === 'cancelled'
+          ? 'bg-blue-500'
+          : 'bg-orange-500'
+      } rounded-xl py-4 w-full shadow-sm`}
+      onPress={showStatusOptions}
+      activeOpacity={0.8}
+    >
+      <View className="flex-row items-center justify-center">
+        <Ionicons 
+          name={
+            (subscriptionData?.status ?? subscription?.status) === 'paused'
+              ? 'play-outline'
+              : (subscriptionData?.status ?? subscription?.status) === 'cancelled'
+              ? 'refresh-outline'
+              : 'pause-outline'
+          } 
+          size={20} 
+          color="white" 
+        />
+        <Text className="text-white text-lg font-semibold ml-2">
+          {(subscriptionData?.status ?? subscription?.status) === 'paused'
+            ? 'Resume Subscription'
+            : (subscriptionData?.status ?? subscription?.status) === 'cancelled'
+            ? 'Reactivate Subscription'
+            : 'Manage Status'
+          }
+        </Text>
+      </View>
+    </TouchableOpacity>
+
+    {/* Delete Button */}
     <TouchableOpacity
       className="bg-red-500 rounded-xl py-4 w-full shadow-sm"
       onPress={() => setModalVisible(true)}

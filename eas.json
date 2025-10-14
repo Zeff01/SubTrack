@@ -1,15 +1,11 @@
 {
   "cli": {
-    "version": ">= 16.16.0",
-    "appVersionSource": "remote"
+    "version": ">= 16.16.0"
   },
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal",
-      "android": {
-        "buildType": "apk"
-      }
+      "distribution": "internal"
     },
     "preview": {
       "distribution": "internal"
@@ -19,6 +15,16 @@
     }
   },
   "submit": {
-    "production": {}
+    "production": {
+      "ios": {
+        "appleId": "jzeffsomera@gmail.com",
+        "ascAppId": "your-app-store-connect-app-id",
+        "appleTeamId": "P44NYVK96V"
+      },
+      "android": {
+        "serviceAccountKeyPath": "./google-service-account.json",
+        "track": "production"
+      }
+    }
   }
 }

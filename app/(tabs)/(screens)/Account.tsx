@@ -160,7 +160,8 @@ const AccountSettingsScreen = () => {
               />
             </View>
 
-            {settingItem("notifications-outline", "Notifications", "Manage push notifications")}
+            {settingItem("notifications-outline", "Notifications", "Manage push notifications", () => (navigation as any).navigate('Notification'))}
+            {settingItem("download-outline", "Data Management", "Export, import & backup", () => (navigation as any).navigate('DataManagement'))}
             {settingItem("language-outline", "Language", "English (United States)")}
           </View>
         </SlideInView>

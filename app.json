@@ -1,23 +1,50 @@
 {
   "expo": {
-    "name": "MySubTrackApp",
-    "slug": "MySubTrackApp",
-    "version": "1.0.0",
+    "name": "SubTrack",
+    "slug": "subtrack",
+    "version": "2.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "mysubtrackapp",
+    "scheme": "subtrack",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/images/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#3AABCC"
+    },
+    "privacy": "public",
+    "description": "Track your subscriptions and manage recurring payments with ease. SubTrack helps you stay on top of your monthly expenses with smart analytics and notifications.",
+    "githubUrl": "https://github.com/Zeff01/SubTrack",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.codebility.subtrack",
+      "buildNumber": "1",
+      "deploymentTarget": "17.0",
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app does not use the camera.",
+        "NSMicrophoneUsageDescription": "This app does not use the microphone.",
+        "NSPhotoLibraryUsageDescription": "This app does not access the photo library."
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#3AABCC"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.lladrian.MySubTrackApp"
+      "package": "com.codebility.subtrack",
+      "versionCode": 1,
+      "permissions": [
+        "INTERNET",
+        "RECEIVE_BOOT_COMPLETED",
+        "VIBRATE",
+        "SCHEDULE_EXACT_ALARM",
+        "INTERNET",
+        "RECEIVE_BOOT_COMPLETED",
+        "VIBRATE",
+        "SCHEDULE_EXACT_ALARM"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -32,7 +59,15 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
+          "backgroundColor": "#3AABCC"
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/icon.png",
+          "color": "#3AABCC",
+          "defaultChannel": "default"
         }
       ]
     ],
@@ -42,9 +77,9 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "9b08dfae-3a53-4f98-aafd-08d283e6b3a8"
+        "projectId": "fe768ce9-06c2-46da-9a10-ceebf7161ddc"
       }
     },
-    "owner": "kindreed"
+    "owner": "zeff01"
   }
 }
