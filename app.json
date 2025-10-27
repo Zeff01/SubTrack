@@ -2,7 +2,7 @@
   "expo": {
     "name": "SubTrack",
     "slug": "subtrack",
-    "version": "2.0.0",
+    "version": "2.0.1",
     "orientation": "portrait",
     "icon": "./assets/SubtrackIcon.png",
     "scheme": "subtrack",
@@ -14,7 +14,7 @@
       "backgroundColor": "#3AABCC"
     },
     "privacy": "public",
-    "description": "Track your subscriptions and manage recurring payments with ease. SubTrack helps you stay on top of your monthly expenses with smart analytics and notifications.",
+    "description": "SubTrack is a comprehensive subscription management app that helps you track both fixed subscriptions (Netflix, Spotify) and variable recurring bills (utilities, phone). Features include payment reminders, spending analytics, calendar integration, and secure cloud sync. Take control of your recurring expenses with intuitive charts and customizable notifications.",
     "githubUrl": "https://github.com/Zeff01/SubTrack",
     "ios": {
       "supportsTablet": true,
@@ -36,10 +36,6 @@
       "package": "com.codebility.subtrack",
       "versionCode": 1,
       "permissions": [
-        "INTERNET",
-        "RECEIVE_BOOT_COMPLETED",
-        "VIBRATE",
-        "SCHEDULE_EXACT_ALARM",
         "INTERNET",
         "RECEIVE_BOOT_COMPLETED",
         "VIBRATE",
